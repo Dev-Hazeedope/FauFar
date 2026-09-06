@@ -1,0 +1,6 @@
+{
+  "name": "Scatter",
+  "description": "A collection of unhurried, browser-based visual search games, starting with Number Hunt.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
