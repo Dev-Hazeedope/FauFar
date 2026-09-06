@@ -6,18 +6,16 @@ import { Check } from 'lucide-react';
 interface Props {
   layout: PlacedNumber[];
   found: Set<number>;
-  hintActive: boolean;
   currentTarget: number | null;
   onTap: (val: number) => void;
 }
 
-export function Board({ layout, found, hintActive, currentTarget, onTap }: Props) {
+export function Board({ layout, found, currentTarget, onTap }: Props) {
   return (
     <div className="relative w-full h-full touch-none select-none overflow-hidden rounded-xl bg-[#fffcf7] shadow-inner border border-slate-200">
       {layout.map((item) => {
         const isFound = found.has(item.value);
-        const isHinted = hintActive && item.value === currentTarget;
-        
+                
         return (
           <button
             key={item.value}
@@ -26,7 +24,7 @@ export function Board({ layout, found, hintActive, currentTarget, onTap }: Props
             className={cn(
               "absolute flex items-center justify-center rounded-xl font-bold touch-manipulation tap-highlight-transparent leading-none",
               isFound ? "text-slate-300 pointer-events-none" : cn(item.colorClass, "active:scale-95 transition-transform"),
-              isHinted && !isFound && "ring-4 ring-indigo-400 bg-indigo-50"
+              
             )}
             style={{
               left: `${item.x}px`,

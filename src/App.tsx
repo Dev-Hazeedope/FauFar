@@ -62,6 +62,9 @@ export default function App() {
                   transition={{ delay: index * 0.1, duration: 0.4, ease: 'easeOut' }}
                   className="flex flex-col text-left p-6 bg-white rounded-3xl shadow-sm border border-slate-200 hover:border-indigo-400 hover:-translate-y-1 hover:shadow-md transition-all group active:scale-95"
                 >
+                  <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <game.icon className="w-6 h-6" />
+                  </div>
                   <h2 className="text-2xl font-bold mb-3 group-hover:text-indigo-600 transition-colors">
                     {game.title}
                   </h2>

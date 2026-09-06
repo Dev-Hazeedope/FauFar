@@ -18,7 +18,6 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
   const [targets, setTargets] = useState<number[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [found, setFound] = useState<Set<number>>(new Set());
-  const [hintActive, setHintActive] = useState(false);
   const [isMuted, setIsMuted] = useState(audio.muted);
   const [layoutError, setLayoutError] = useState(false);
   const [resizeError, setResizeError] = useState(false);
@@ -42,8 +41,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
     setLayout(newLayout);
     setCurrentIndex(0);
     setFound(new Set());
-    setHintActive(false);
-    setLayoutError(false);
+        setLayoutError(false);
     setResizeError(false);
     setTimeLeft(config.timeLimit);
   }, [config, totalNumbers]);
@@ -103,8 +101,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
     
     if (val === target) {
       audio.playCorrect();
-      setHintActive(false);
-      
+            
       const nextFound = new Set(found);
       nextFound.add(val);
       setFound(nextFound);
@@ -124,11 +121,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
     setIsMuted(audio.muted);
   };
 
-  const showHint = () => {
-    setHintActive(true);
-    setTimeout(() => setHintActive(false), 1500); // Brief outline
-  };
-
+  
   const currentTarget = targets[currentIndex] ?? null;
 
   return (
@@ -178,7 +171,6 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
           <Board 
             layout={layout} 
             found={found} 
-            hintActive={hintActive} 
             currentTarget={currentTarget} 
             onTap={handleTap} 
           />
@@ -214,15 +206,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
 
       {/* Footer Controls */}
       <footer className="flex-none p-4 pb-6 flex items-center justify-center gap-4 border-t border-slate-200 bg-white z-10">
-        <button 
-          onClick={showHint}
-          disabled={hintActive || layoutError || resizeError}
-          className="flex flex-col items-center gap-1 p-2 min-w-[80px] text-slate-600 hover:text-indigo-600 active:scale-95 disabled:opacity-50 transition-all"
-        >
-          <Lightbulb className="w-6 h-6" />
-          <span className="text-xs font-semibold">Hint</span>
-        </button>
-        
+                
         <button 
           onClick={handleRestart}
           className="flex flex-col items-center gap-1 p-2 min-w-[80px] text-slate-600 hover:text-indigo-600 active:scale-95 transition-all"

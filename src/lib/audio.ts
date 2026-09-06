@@ -61,6 +61,11 @@ class AudioEngine {
       }, i * 120);
     });
   }
+
+  playTap() {
+    // A very soft, quick click/tap sound
+    this.playTone(600, 'sine', 0.1, 0.05);
+  }
 }
 
 export const audio = new AudioEngine();
