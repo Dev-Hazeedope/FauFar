@@ -12,7 +12,7 @@ export function NumberHunt({ onExit }: Props) {
   const [state, setState] = useState<GameState>('SETUP');
   // Default range 1-40. We could sniff viewport and make it 1-20 for very small screens,
   // but let's stick to the requirement: "Use 1-40 as the initial default where it fits".
-  const [config, setConfig] = useState<GameConfig>({ start: 1, end: 40, timedMode: false });
+  const [config, setConfig] = useState<GameConfig>({ start: 1, end: 40, timedMode: false, timeLimit: 120 });
   const [won, setWon] = useState(true);
 
   switch (state) {

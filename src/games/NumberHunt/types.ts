@@ -4,6 +4,7 @@ export interface GameConfig {
   start: number;
   end: number;
   timedMode: boolean;
+  timeLimit: number;
 }
 
 export interface PlacedNumber {

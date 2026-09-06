@@ -13,11 +13,13 @@ export function Setup({ initialConfig, onStart, onBack }: Props) {
   const [start, setStart] = useState(initialConfig.start.toString());
   const [end, setEnd] = useState(initialConfig.end.toString());
   const [timedMode, setTimedMode] = useState(initialConfig.timedMode);
+  const [timeLimit, setTimeLimit] = useState(initialConfig.timeLimit.toString());
   const [error, setError] = useState<string | null>(null);
 
   const handleStart = () => {
     const s = parseInt(start, 10);
     const e = parseInt(end, 10);
+    const t = parseInt(timeLimit, 10);
 
     if (isNaN(s) || isNaN(e)) {
       setError('Please enter valid numbers.');
@@ -36,10 +38,14 @@ export function Setup({ initialConfig, onStart, onBack }: Props) {
       setError('Total numbers must be between 2 and 200.');
       return;
     }
+    if (timedMode && (isNaN(t) || t < 5)) {
+      setError('Please enter a valid time limit (minimum 5 seconds).');
+      return;
+    }
 
     setError(null);
     audio.init();
-    onStart({ start: s, end: e, timedMode });
+    onStart({ start: s, end: e, timedMode, timeLimit: t });
   };
 
   const applyPreset = (s: number, e: number) => {
@@ -95,7 +101,7 @@ export function Setup({ initialConfig, onStart, onBack }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+        <div className="flex items-center justify-between mb-2 p-4 bg-slate-50 border border-slate-200 rounded-lg">
           <div>
             <div className="font-semibold text-slate-700">Timed Mode</div>
             <div className="text-sm text-slate-500">Race against the clock</div>
@@ -110,6 +116,25 @@ export function Setup({ initialConfig, onStart, onBack }: Props) {
             <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
           </label>
         </div>
+
+        {timedMode && (
+          <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg animate-in fade-in slide-in-from-top-2">
+            <label htmlFor="timeLimit" className="block text-sm font-semibold text-slate-700 mb-2">Time Limit (seconds)</label>
+            <div className="flex gap-2 mb-3">
+              <button type="button" onClick={() => setTimeLimit('30')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">30s</button>
+              <button type="button" onClick={() => setTimeLimit('60')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">1m</button>
+              <button type="button" onClick={() => setTimeLimit('120')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">2m</button>
+              <button type="button" onClick={() => setTimeLimit('300')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">5m</button>
+            </div>
+            <input 
+              id="timeLimit"
+              type="number" 
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(e.target.value)}
+              className="w-full p-3 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow text-lg"
+            />
+          </div>
+        )}
 
         {error && (
           <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-lg border border-red-100" role="alert">

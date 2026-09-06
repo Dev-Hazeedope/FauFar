@@ -24,7 +24,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
   const [resizeError, setResizeError] = useState(false);
 
   const totalNumbers = config.end - config.start + 1;
-  const [timeLeft, setTimeLeft] = useState(totalNumbers * 3);
+  const [timeLeft, setTimeLeft] = useState(config.timeLimit);
 
   const boardContainerRef = useRef<HTMLDivElement>(null);
   const baseSize = useRef<{ w: number; h: number } | null>(null);
@@ -45,7 +45,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
     setHintActive(false);
     setLayoutError(false);
     setResizeError(false);
-    setTimeLeft(totalNumbers * 3);
+    setTimeLeft(config.timeLimit);
   }, [config, totalNumbers]);
 
   useEffect(() => {
