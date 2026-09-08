@@ -7,7 +7,7 @@ import { shuffle } from '../../lib/utils';
 import { audio } from '../../lib/audio';
 
 type Mode = 'solo' | 'two';
-type Difficulty = 10 | 15 | 20;
+type Difficulty = 6 | 8 | 12;
 
 interface Card {
   id: string;
