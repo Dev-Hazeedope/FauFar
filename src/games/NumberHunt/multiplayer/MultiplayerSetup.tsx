@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { getSocket } from './SocketClient';
 import { Home, Users, User, ArrowLeft, Play } from 'lucide-react';
 import { TimerSetup } from '../../../components/TimerSetup';
+import { createRoom, joinRoom } from './MultiplayerManager';
 
 interface Props {
   onBack: () => void;
@@ -22,7 +22,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
   const [error, setError] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const handleHost = () => {
+  const handleHost = async () => {
     if (!playerName.trim()) {
       setError("Please enter your name");
       return;
@@ -44,39 +44,37 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
 
     setError('');
     setIsConnecting(true);
-    const socket = getSocket();
-    socket.emit('create_room', {
-      name: playerName.trim(),
-      config: { start: startNum, end: endNum, timeLimit: timeLimit * 60 }
-    }, (res: any) => {
+    
+    try {
+      const room = await createRoom(playerName.trim(), {
+        start: startNum,
+        end: endNum,
+        timeLimit: timeLimit * 60
+      });
       setIsConnecting(false);
-      if (res.success) {
-        onJoinRoom(res.room);
-      } else {
-        setError(res.error || "Failed to host game");
-      }
-    });
+      onJoinRoom(room);
+    } catch (err: any) {
+      setIsConnecting(false);
+      setError(err.message || "Failed to host game");
+    }
   };
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!playerName.trim() || !roomCode.trim()) {
       setError("Please enter name and room code");
       return;
     }
     setError('');
     setIsConnecting(true);
-    const socket = getSocket();
-    socket.emit('join_room', {
-      roomId: roomCode.trim().toUpperCase(),
-      name: playerName.trim()
-    }, (res: any) => {
+    
+    try {
+      const room = await joinRoom(roomCode.trim().toUpperCase(), playerName.trim());
       setIsConnecting(false);
-      if (res.success) {
-        onJoinRoom(res.room);
-      } else {
-        setError(res.error || "Failed to join game");
-      }
-    });
+      onJoinRoom(room);
+    } catch (err: any) {
+      setIsConnecting(false);
+      setError(err.message || "Failed to join game");
+    }
   };
 
   if (setupMode === 'SELECT') {

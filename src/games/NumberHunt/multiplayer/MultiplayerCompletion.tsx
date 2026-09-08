@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Trophy, LogOut, RotateCcw } from 'lucide-react';
-import { getSocket } from './SocketClient';
+import { subscribeToRoom, restartGame, leaveRoom, clientId } from './MultiplayerManager';
 
 interface Props {
   room: any;
@@ -9,23 +9,25 @@ interface Props {
 }
 
 export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
-  const socket = getSocket();
-  const isHost = socket.id === room.hostId;
+  const isHost = clientId === room.hostId;
 
   useEffect(() => {
-    const handleRoomUpdated = (r: any) => onRoomUpdated(r);
-    socket.on('room_updated', handleRoomUpdated);
-    return () => {
-      socket.off('room_updated', handleRoomUpdated);
-    };
-  }, [socket, onRoomUpdated]);
+    const unsubscribe = subscribeToRoom(room.id, (updatedRoom) => {
+      if (!updatedRoom) {
+        onLeave();
+        return;
+      }
+      onRoomUpdated(updatedRoom);
+    });
+    return () => unsubscribe();
+  }, [room.id, onRoomUpdated, onLeave]);
 
   const handleRestart = () => {
-    socket.emit('restart_game', room.id);
+    restartGame(room.id);
   };
 
   const handleLeave = () => {
-    socket.emit('leave_room', room.id);
+    leaveRoom(room.id);
     onLeave();
   };
 
@@ -52,7 +54,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
               <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="flex items-center gap-3">
                   <span className="font-black text-slate-300 w-4">{idx + 1}</span>
-                  <span className="font-bold text-slate-700">{p.name} {p.id === socket.id ? '(You)' : ''}</span>
+                  <span className="font-bold text-slate-700">{p.name} {p.id === clientId ? '(You)' : ''}</span>
                 </div>
                 <span className="font-black text-indigo-600">{p.score}</span>
               </div>

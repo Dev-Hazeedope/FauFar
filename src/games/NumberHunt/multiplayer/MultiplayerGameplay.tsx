@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { getSocket } from './SocketClient';
 import { LogOut, Users, Play, Trophy } from 'lucide-react';
 import { Board } from '../Board';
 import { PlacedNumber } from '../types';
 import { generateLayout } from '../layout';
 import { audio } from '../../../lib/audio';
 import { TimerDisplay } from '../../../components/TimerDisplay';
+import { subscribeToRoom, startGame, leaveRoom, foundNumber, endGame, clientId } from './MultiplayerManager';
 
 interface Props {
   room: any;
@@ -15,42 +15,42 @@ interface Props {
 }
 
 export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated }: Props) {
-  const socket = getSocket();
   const [layout, setLayout] = useState<PlacedNumber[] | null>(null);
   const boardContainerRef = React.useRef<HTMLDivElement>(null);
   const [winnerAlert, setWinnerAlert] = useState<{name: string, points: number} | null>(null);
-
-  const isHost = socket.id === room.hostId;
+  
+  const isHost = clientId === room.hostId;
   const isPlaying = room.state === 'playing';
 
   useEffect(() => {
-    const handleRoomUpdated = (r: any) => onRoomUpdated(r);
-    const handleGameStarted = (r: any) => {
-      onRoomUpdated(r);
-      audio.playCorrect();
-    };
-    const handleGameEnded = (r: any) => {
-      onGameEnded(r);
-    };
-    const handleNumberFound = (data: any) => {
-      onRoomUpdated(data.room);
-      setWinnerAlert({ name: data.playerName, points: data.pointsAwarded });
-      audio.playCorrect();
-      setTimeout(() => setWinnerAlert(null), 2000);
-    };
+    const unsubscribe = subscribeToRoom(room.id, (updatedRoom) => {
+      if (!updatedRoom) {
+        onLeave();
+        return;
+      }
+      
+      onRoomUpdated(updatedRoom);
 
-    socket.on('room_updated', handleRoomUpdated);
-    socket.on('game_started', handleGameStarted);
-    socket.on('game_ended', handleGameEnded);
-    socket.on('number_found', handleNumberFound);
+      // Detect game start
+      if (room.state !== 'playing' && updatedRoom.state === 'playing') {
+        audio.playCorrect();
+      }
 
-    return () => {
-      socket.off('room_updated', handleRoomUpdated);
-      socket.off('game_started', handleGameStarted);
-      socket.off('game_ended', handleGameEnded);
-      socket.off('number_found', handleNumberFound);
-    };
-  }, [socket, onRoomUpdated, onGameEnded]);
+      // Detect game end
+      if (room.state === 'playing' && updatedRoom.state === 'completed') {
+        onGameEnded(updatedRoom);
+      }
+
+      // Detect number found
+      if (updatedRoom.lastWinner && updatedRoom.lastWinner.timestamp > (room.lastWinner?.timestamp || 0)) {
+        setWinnerAlert({ name: updatedRoom.lastWinner.name, points: updatedRoom.lastWinner.points });
+        audio.playCorrect();
+        setTimeout(() => setWinnerAlert(null), 2000);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [room.id, room.state, room.lastWinner, onRoomUpdated, onGameEnded, onLeave]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -61,17 +61,17 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
   }, [isPlaying, room.currentNumber, room.config]);
 
   const handleStartGame = () => {
-    socket.emit('start_game', room.id);
+    startGame(room.id);
   };
 
   const handleLeave = () => {
-    socket.emit('leave_room', room.id);
+    leaveRoom(room.id);
     onLeave();
   };
 
   const handleNumberClick = (num: number) => {
     if (num === room.currentNumber) {
-      socket.emit('found_number', { roomId: room.id, number: num });
+      foundNumber(room.id, num);
     } else {
       audio.playWrong();
     }
@@ -109,7 +109,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
                     {p.name}
                     {p.id === room.hostId && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Host</span>}
                   </span>
-                  {p.id === socket.id && <span className="text-xs text-slate-400 font-bold">(You)</span>}
+                  {p.id === clientId && <span className="text-xs text-slate-400 font-bold">(You)</span>}
                 </div>
               ))}
             </div>
@@ -151,7 +151,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
         <div className="flex items-center gap-6">
           <div className="flex flex-col items-end">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Your Score</span>
-            <span className="text-xl font-black text-slate-700 leading-none">{room.players[socket.id]?.score || 0}</span>
+            <span className="text-xl font-black text-slate-700 leading-none">{room.players[clientId]?.score || 0}</span>
           </div>
           
           <TimerDisplay 
@@ -161,7 +161,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
             isActive={true}
             onTimeUp={() => {
               if (isHost) {
-                socket.emit('end_game', room.id);
+                endGame(room.id);
               }
             }} 
           />
