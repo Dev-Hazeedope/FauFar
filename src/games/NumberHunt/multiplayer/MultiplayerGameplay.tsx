@@ -22,6 +22,13 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
 
   const isHost = socket.id === room.hostId;
   const isPlaying = room.state === 'playing' || room.state === 'completed';
+  const [localTimeLeft, setLocalTimeLeft] = useState(room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0);
+  
+  useEffect(() => {
+    if (room.endTime) {
+      setLocalTimeLeft(Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)));
+    }
+  }, [room.endTime]);
 
   useEffect(() => {
     const handleRoomUpdated = (r: any) => onRoomUpdated(r);
@@ -157,8 +164,8 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
           
           <TimerDisplay 
             timedMode={true}
-            timeLeft={room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0}
-            setTimeLeft={() => {}}
+            timeLeft={localTimeLeft}
+            setTimeLeft={setLocalTimeLeft}
             isActive={room.state === 'playing'}
             onTimeUp={() => {
               if (isHost && room.state === 'playing') {
