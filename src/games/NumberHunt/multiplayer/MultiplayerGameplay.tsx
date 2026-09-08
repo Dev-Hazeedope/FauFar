@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { LogOut, Users, Play, Trophy } from 'lucide-react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { LogOut, Users, Play, Trophy, Copy, Check } from 'lucide-react';
 import { Board } from '../Board';
 import { PlacedNumber } from '../types';
 import { generateLayout } from '../layout';
@@ -18,6 +18,10 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
   const [layout, setLayout] = useState<PlacedNumber[] | null>(null);
   const boardContainerRef = React.useRef<HTMLDivElement>(null);
   const [winnerAlert, setWinnerAlert] = useState<{name: string, points: number} | null>(null);
+  const [copied, setCopied] = useState(false);
+  
+  const initialTimeLeft = room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0;
+  const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
   
   const isHost = clientId === room.hostId;
   const isPlaying = room.state === 'playing';
@@ -41,6 +45,11 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
       
       const prevRoom = prevRoomRef.current;
 
+      // Detect new player joined
+      if (prevRoom.state === 'waiting' && Object.keys(updatedRoom.players).length > Object.keys(prevRoom.players).length) {
+        audio.playJoin();
+      }
+
       // Detect game start
       if (prevRoom.state !== 'playing' && updatedRoom.state === 'playing') {
         audio.playCorrect();
@@ -48,6 +57,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
 
       // Detect game end
       if (prevRoom.state === 'playing' && updatedRoom.state === 'completed') {
+        audio.playComplete();
         onGameEnded(updatedRoom);
       }
 
@@ -63,6 +73,12 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
 
     return () => unsubscribe();
   }, [room.id]);
+
+  useEffect(() => {
+    if (room.endTime) {
+      setTimeLeft(Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)));
+    }
+  }, [room.endTime]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -89,6 +105,12 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
     }
   };
 
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(room.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (!isPlaying) {
     return (
       <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset">
@@ -96,9 +118,18 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
           <button onClick={handleLeave} className="p-3 text-red-500 hover:text-red-600 bg-red-50 rounded-full">
             <LogOut className="w-6 h-6" />
           </button>
-          <div className="text-center">
-            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Room Code</p>
-            <h1 className="text-4xl font-black text-slate-900 tracking-widest">{room.id}</h1>
+          <div className="text-center relative">
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Room Code</p>
+            <div className="flex items-center justify-center gap-3">
+              <h1 className="text-4xl font-black text-slate-900 tracking-widest">{room.id}</h1>
+              <button 
+                onClick={handleCopyCode}
+                className="p-2 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                title="Copy room code"
+              >
+                {copied ? <Check className="w-6 h-6 text-emerald-500" /> : <Copy className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
           <div className="w-12" />
         </header>
@@ -118,6 +149,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
               {Object.values(room.players).map((p: any) => (
                 <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
                   <span className="font-bold text-slate-700 flex items-center gap-2">
+                    <span className="text-xl">{p.avatar}</span>
                     {p.name}
                     {p.id === room.hostId && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Host</span>}
                   </span>
@@ -168,8 +200,8 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
           
           <TimerDisplay 
             timedMode={true}
-            timeLeft={room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0}
-            setTimeLeft={() => {}}
+            timeLeft={timeLeft}
+            setTimeLeft={setTimeLeft}
             isActive={true}
             onTimeUp={() => {
               if (isHost) {

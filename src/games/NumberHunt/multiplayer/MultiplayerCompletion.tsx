@@ -45,8 +45,8 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
       <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-8">
         
         <div className="text-center flex flex-col items-center">
-          <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-yellow-500/20">
-            <Trophy className="w-12 h-12 text-yellow-500" />
+          <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-yellow-500/20 text-5xl">
+            {winner?.avatar || <Trophy className="w-12 h-12 text-yellow-500" />}
           </div>
           <h2 className="text-xl font-bold text-slate-500 mb-2">Winner</h2>
           <h1 className="text-4xl font-black text-slate-900">{winner?.name || 'Nobody'}</h1>
@@ -60,6 +60,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
               <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="flex items-center gap-3">
                   <span className="font-black text-slate-300 w-4">{idx + 1}</span>
+                  <span className="text-xl">{p.avatar}</span>
                   <span className="font-bold text-slate-700">{p.name} {p.id === clientId ? '(You)' : ''}</span>
                 </div>
                 <span className="font-black text-indigo-600">{p.score}</span>

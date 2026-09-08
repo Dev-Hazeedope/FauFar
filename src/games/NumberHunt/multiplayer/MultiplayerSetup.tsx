@@ -8,11 +8,14 @@ interface Props {
   onJoinRoom: (room: any) => void;
 }
 
+const AVATARS = ['🦊', '🐰', '🐼', '🐯', '🐸', '🐶', '🐱', '🐮', '🐨', '🐷'];
+
 export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
   const [setupMode, setSetupMode] = useState<'SELECT' | 'HOST' | 'JOIN'>('SELECT');
   
   // Host state
   const [playerName, setPlayerName] = useState('');
+  const [avatar, setAvatar] = useState(AVATARS[0]);
   const [startNum, setStartNum] = useState(1);
   const [endNum, setEndNum] = useState(100);
   const [timeLimit, setTimeLimit] = useState(5); // in minutes
@@ -46,7 +49,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
     setIsConnecting(true);
     
     try {
-      const room = await createRoom(playerName.trim(), {
+      const room = await createRoom(playerName.trim(), avatar, {
         start: startNum,
         end: endNum,
         timeLimit: timeLimit * 60
@@ -68,7 +71,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
     setIsConnecting(true);
     
     try {
-      const room = await joinRoom(roomCode.trim().toUpperCase(), playerName.trim());
+      const room = await joinRoom(roomCode.trim().toUpperCase(), playerName.trim(), avatar);
       setIsConnecting(false);
       onJoinRoom(room);
     } catch (err: any) {
@@ -146,6 +149,21 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
             className="w-full p-4 rounded-xl border border-slate-200 bg-white font-bold text-lg focus:ring-2 focus:ring-indigo-500 outline-none"
             maxLength={15}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-slate-600 mb-2">Choose Avatar</label>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {AVATARS.map(a => (
+              <button
+                key={a}
+                onClick={() => setAvatar(a)}
+                className={`w-12 h-12 text-2xl flex items-center justify-center rounded-xl border-2 transition-all ${avatar === a ? 'border-indigo-500 bg-indigo-50 scale-110' : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50'}`}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
         </div>
 
         {setupMode === 'JOIN' && (

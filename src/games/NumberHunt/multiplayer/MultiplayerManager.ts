@@ -4,6 +4,7 @@ export interface Player {
   id: string;
   name: string;
   score: number;
+  avatar: string;
 }
 
 export interface Room {
@@ -42,7 +43,7 @@ const getClientId = () => {
 
 export const clientId = getClientId();
 
-export const createRoom = async (name: string, config: { start: number; end: number; timeLimit: number }): Promise<Room> => {
+export const createRoom = async (name: string, avatar: string, config: { start: number; end: number; timeLimit: number }): Promise<Room> => {
   const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
   const roomRef = doc(db, 'rooms', roomId);
   
@@ -50,7 +51,7 @@ export const createRoom = async (name: string, config: { start: number; end: num
     id: roomId,
     hostId: clientId,
     players: {
-      [clientId]: { id: clientId, name, score: 0 }
+      [clientId]: { id: clientId, name, avatar, score: 0 }
     },
     config,
     state: 'waiting',
@@ -63,7 +64,7 @@ export const createRoom = async (name: string, config: { start: number; end: num
   return room;
 };
 
-export const joinRoom = async (roomId: string, name: string): Promise<Room> => {
+export const joinRoom = async (roomId: string, name: string, avatar: string): Promise<Room> => {
   const roomRef = doc(db, 'rooms', roomId);
   
   return await runTransaction(db, async (transaction) => {
@@ -82,7 +83,7 @@ export const joinRoom = async (roomId: string, name: string): Promise<Room> => {
       throw new Error("Name already taken in this room");
     }
 
-    room.players[clientId] = { id: clientId, name, score: 0 };
+    room.players[clientId] = { id: clientId, name, avatar, score: 0 };
     transaction.update(roomRef, { players: room.players });
     return room;
   });

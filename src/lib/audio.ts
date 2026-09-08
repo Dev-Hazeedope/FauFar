@@ -52,6 +52,12 @@ class AudioEngine {
     this.playTone(220, 'triangle', 0.3, 0.1);
   }
 
+  playJoin() {
+    // A friendly two-tone "pop"
+    this.playTone(523.25, 'sine', 0.1, 0.1); // C5
+    setTimeout(() => this.playTone(659.25, 'sine', 0.2, 0.1), 100); // E5
+  }
+
   playComplete() {
     // A small arpeggio
     const notes = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C
