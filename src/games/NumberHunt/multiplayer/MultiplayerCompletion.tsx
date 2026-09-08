@@ -11,8 +11,14 @@ interface Props {
 export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
   const isHost = clientId === room.hostId;
 
+  const callbacksRef = React.useRef({ onLeave, onRoomUpdated });
+  useEffect(() => {
+    callbacksRef.current = { onLeave, onRoomUpdated };
+  });
+
   useEffect(() => {
     const unsubscribe = subscribeToRoom(room.id, (updatedRoom) => {
+      const { onLeave, onRoomUpdated } = callbacksRef.current;
       if (!updatedRoom) {
         onLeave();
         return;
@@ -20,7 +26,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
       onRoomUpdated(updatedRoom);
     });
     return () => unsubscribe();
-  }, [room.id, onRoomUpdated, onLeave]);
+  }, [room.id]);
 
   const handleRestart = () => {
     restartGame(room.id);

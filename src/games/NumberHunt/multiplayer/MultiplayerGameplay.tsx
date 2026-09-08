@@ -22,35 +22,47 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
   const isHost = clientId === room.hostId;
   const isPlaying = room.state === 'playing';
 
+  const callbacksRef = React.useRef({ onLeave, onGameEnded, onRoomUpdated });
+  useEffect(() => {
+    callbacksRef.current = { onLeave, onGameEnded, onRoomUpdated };
+  });
+
+  const prevRoomRef = React.useRef(room);
+
   useEffect(() => {
     const unsubscribe = subscribeToRoom(room.id, (updatedRoom) => {
+      const { onLeave, onGameEnded, onRoomUpdated } = callbacksRef.current;
       if (!updatedRoom) {
         onLeave();
         return;
       }
       
       onRoomUpdated(updatedRoom);
+      
+      const prevRoom = prevRoomRef.current;
 
       // Detect game start
-      if (room.state !== 'playing' && updatedRoom.state === 'playing') {
+      if (prevRoom.state !== 'playing' && updatedRoom.state === 'playing') {
         audio.playCorrect();
       }
 
       // Detect game end
-      if (room.state === 'playing' && updatedRoom.state === 'completed') {
+      if (prevRoom.state === 'playing' && updatedRoom.state === 'completed') {
         onGameEnded(updatedRoom);
       }
 
       // Detect number found
-      if (updatedRoom.lastWinner && updatedRoom.lastWinner.timestamp > (room.lastWinner?.timestamp || 0)) {
+      if (updatedRoom.lastWinner && updatedRoom.lastWinner.timestamp > (prevRoom.lastWinner?.timestamp || 0)) {
         setWinnerAlert({ name: updatedRoom.lastWinner.name, points: updatedRoom.lastWinner.points });
         audio.playCorrect();
         setTimeout(() => setWinnerAlert(null), 2000);
       }
+
+      prevRoomRef.current = updatedRoom;
     });
 
     return () => unsubscribe();
-  }, [room.id, room.state, room.lastWinner, onRoomUpdated, onGameEnded, onLeave]);
+  }, [room.id]);
 
   useEffect(() => {
     if (isPlaying) {
