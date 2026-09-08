@@ -93,33 +93,18 @@ export function NumberHunt({ onExit }: Props) {
         );
       case 'COMPLETED':
         return (
-          <div className="relative h-[100dvh] w-full overflow-hidden">
-            <MultiplayerGameplay 
-              room={room} 
-              onLeave={() => {
-                setRoom(null);
-                setState('SETUP');
-                setMode('SELECT');
-              }}
-              onGameEnded={(r) => {
-                setRoom(r);
-                setState('COMPLETED');
-              }}
-              onRoomUpdated={setRoom}
-            />
-            <MultiplayerCompletion 
-              room={room} 
-              onLeave={() => {
-                setRoom(null);
-                setState('SETUP');
-                setMode('SELECT');
-              }}
-              onRoomUpdated={(r) => {
-                setRoom(r);
-                if (r.state === 'waiting') setState('PREPARING');
-              }}
-            />
-          </div>
+          <MultiplayerCompletion 
+            room={room} 
+            onLeave={() => {
+              setRoom(null);
+              setState('SETUP');
+              setMode('SELECT');
+            }}
+            onRoomUpdated={(r) => {
+              setRoom(r);
+              if (r.state === 'waiting') setState('PREPARING');
+            }}
+          />
         );
     }
   }

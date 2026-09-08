@@ -33,30 +33,26 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
   const winner = players[0] as any;
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-      {/* Dark overlay backdrop */}
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-
-      {/* Modal Container */}
-      <div className="relative bg-white rounded-[2rem] p-8 max-w-sm mx-auto w-full shadow-2xl flex flex-col gap-6 animate-in zoom-in-95 fade-in duration-200">
+    <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset">
+      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-8">
         
         <div className="text-center flex flex-col items-center">
-          <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4 shadow-xl shadow-yellow-500/20">
-            <Trophy className="w-10 h-10 text-yellow-500" />
+          <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-yellow-500/20">
+            <Trophy className="w-12 h-12 text-yellow-500" />
           </div>
-          <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Round Summary</h2>
-          <h1 className="text-3xl font-black text-slate-900 leading-none">{winner?.name || 'Nobody'}</h1>
-          <p className="text-indigo-600 font-bold mt-2 text-lg">Winner • {winner?.score || 0} pts</p>
+          <h2 className="text-xl font-bold text-slate-500 mb-2">Winner</h2>
+          <h1 className="text-4xl font-black text-slate-900">{winner?.name || 'Nobody'}</h1>
+          <p className="text-indigo-600 font-bold mt-2 text-xl">{winner?.score || 0} pts</p>
         </div>
 
-        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 max-h-48 overflow-y-auto">
-          <h3 className="font-bold text-slate-400 mb-3 uppercase tracking-wider text-xs">Leaderboard</h3>
-          <div className="space-y-2">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+          <h3 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm">Leaderboard</h3>
+          <div className="space-y-3">
             {players.map((p: any, idx: number) => (
-              <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-100 shadow-sm">
+              <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="flex items-center gap-3">
-                  <span className="font-black text-slate-300 w-4 text-sm">{idx + 1}</span>
-                  <span className="font-bold text-slate-700">{p.name} {p.id === socket.id ? <span className="text-slate-400 font-normal text-sm ml-1">(You)</span> : ''}</span>
+                  <span className="font-black text-slate-300 w-4">{idx + 1}</span>
+                  <span className="font-bold text-slate-700">{p.name} {p.id === socket.id ? '(You)' : ''}</span>
                 </div>
                 <span className="font-black text-indigo-600">{p.score}</span>
               </div>
@@ -64,18 +60,18 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
           </div>
         </div>
 
-        <div className="flex gap-3 mt-2">
+        <div className="flex gap-4">
           <button
             onClick={handleLeave}
-            className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 active:scale-95 transition-transform"
+            className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-200"
           >
-            <LogOut className="w-5 h-5" /> Leave
+            <LogOut className="w-5 h-5" /> Leave Room
           </button>
           
           {isHost && (
             <button
               onClick={handleRestart}
-              className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 active:scale-95 transition-transform"
+              className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
               <RotateCcw className="w-5 h-5" /> Play Again
             </button>
@@ -83,7 +79,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
         </div>
         
         {!isHost && (
-          <p className="text-center text-sm font-bold text-slate-400">Waiting for host to restart...</p>
+          <p className="text-center text-sm font-bold text-slate-500 mt-4">Waiting for host to restart...</p>
         )}
       </div>
     </div>

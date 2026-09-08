@@ -21,14 +21,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
   const [winnerAlert, setWinnerAlert] = useState<{name: string, points: number} | null>(null);
 
   const isHost = socket.id === room.hostId;
-  const isPlaying = room.state === 'playing' || room.state === 'completed';
-  const [localTimeLeft, setLocalTimeLeft] = useState(room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0);
-  
-  useEffect(() => {
-    if (room.endTime) {
-      setLocalTimeLeft(Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)));
-    }
-  }, [room.endTime]);
+  const isPlaying = room.state === 'playing';
 
   useEffect(() => {
     const handleRoomUpdated = (r: any) => onRoomUpdated(r);
@@ -77,7 +70,6 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
   };
 
   const handleNumberClick = (num: number) => {
-    if (room.state !== 'playing') return;
     if (num === room.currentNumber) {
       socket.emit('found_number', { roomId: room.id, number: num });
     } else {
@@ -164,11 +156,11 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
           
           <TimerDisplay 
             timedMode={true}
-            timeLeft={localTimeLeft}
-            setTimeLeft={setLocalTimeLeft}
-            isActive={room.state === 'playing'}
+            timeLeft={room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0}
+            setTimeLeft={() => {}}
+            isActive={true}
             onTimeUp={() => {
-              if (isHost && room.state === 'playing') {
+              if (isHost) {
                 socket.emit('end_game', room.id);
               }
             }} 
