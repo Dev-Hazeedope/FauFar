@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
-import { Home, RefreshCw, X, Delete } from 'lucide-react';
+import { Home, RefreshCw, X, Delete, Users, User, Link } from 'lucide-react';
 
 import { TimerSetup } from '../../components/TimerSetup';
 import { TimerDisplay } from '../../components/TimerDisplay';
 import { audio } from '../../lib/audio';
 import { shuffle } from '../../lib/utils';
+import { MultiplayerSetup } from './multiplayer/MultiplayerSetup';
+import { MultiplayerGameplay } from './multiplayer/MultiplayerGameplay';
+import { MultiplayerCompletion } from './multiplayer/MultiplayerCompletion';
 
 type Phase = 'setup' | 'playing' | 'completed';
 
 const SYMBOLS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export function CrackTheCode({ onExit }: { onExit: () => void }) {
+  const [selectMode, setSelectMode] = useState<'SELECT' | 'LOCAL' | 'MULTI'>('SELECT');
   const [phase, setPhase] = useState<any>('setup');
+  
+  // Multiplayer state
+  const [room, setRoom] = useState<any>(null);
+
   const [timedMode, setTimedMode] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -82,13 +90,83 @@ export function CrackTheCode({ onExit }: { onExit: () => void }) {
     }
   };
 
+  if (selectMode === 'SELECT') {
+    return (
+      <div className="min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset flex flex-col">
+        <header className="flex items-center gap-4 mb-8">
+          <button onClick={onExit} className="p-3 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
+            <Home className="w-6 h-6" />
+          </button>
+          <h1 className="text-3xl font-black text-slate-900">Crack the Code</h1>
+        </header>
+
+        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
+          <button
+            onClick={() => setSelectMode('LOCAL')}
+            className="w-full p-8 bg-indigo-600 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-indigo-600/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <User className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Local Play</h2>
+              <p className="text-indigo-100">Play solo</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setSelectMode('MULTI')}
+            className="w-full p-8 bg-emerald-500 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-emerald-500/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <Link className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Online Multiplayer</h2>
+              <p className="text-emerald-100">Race to crack the code first</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectMode === 'MULTI') {
+    if (!room) {
+      return (
+        <MultiplayerSetup 
+          onBack={() => setSelectMode('SELECT')} 
+          onJoinRoom={setRoom} 
+        />
+      );
+    }
+    
+    if (room.state === 'completed') {
+      return (
+        <MultiplayerCompletion
+          room={room}
+          onLeave={() => { setRoom(null); setSelectMode('SELECT'); }}
+          onRoomUpdated={setRoom}
+        />
+      );
+    }
+    
+    return (
+      <MultiplayerGameplay 
+        room={room} 
+        onLeave={() => { setRoom(null); setSelectMode('SELECT'); }} 
+        onGameEnded={setRoom}
+      />
+    );
+  }
+
   if (phase === 'setup') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-[#fdfbf7] p-6 text-slate-800">
         <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
           <div className="flex items-center mb-6">
-             <button onClick={onExit} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><Home className="w-6 h-6" /></button>
-             <h1 className="text-2xl font-black ml-2 text-slate-900">Crack the Code</h1>
+             <button onClick={() => setSelectMode('SELECT')} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><Home className="w-6 h-6" /></button>
+             <h1 className="text-2xl font-black ml-2 text-slate-900">Local Play</h1>
           </div>
           <p className="mb-4 text-slate-600">The app hides 5 distinct numbers (1-8) in a secret order. No repeats allowed.</p>
           <TimerSetup timedMode={timedMode} setTimedMode={setTimedMode} timeLimit={timeLimit} setTimeLimit={setTimeLimit} />
@@ -108,10 +186,13 @@ export function CrackTheCode({ onExit }: { onExit: () => void }) {
     <div className="flex flex-col h-[100dvh] bg-[#fdfbf7] text-slate-800 safe-area-inset overflow-hidden">
       <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur border-b border-slate-200 shrink-0">
         <div className="flex items-center gap-2">
-          <button onClick={onExit} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
-          <span className="font-bold text-slate-900 ml-2">Crack the Code</span>
+          <button onClick={() => setSelectMode('SELECT')} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
+          <span className="font-bold text-slate-900 ml-2">Local Play</span>
         </div>
-        <button onClick={startRound} className="p-2 text-indigo-600 bg-indigo-50 rounded-full"><RefreshCw className="w-5 h-5" /></button>
+        <div className="flex items-center gap-2">
+           <TimerDisplay timedMode={timedMode} timeLeft={timeLeft} setTimeLeft={setTimeLeft} isActive={phase === 'playing'} onTimeUp={() => { setIsTimeUp(true); setPhase('completed'); }} />
+           <button onClick={startRound} className="p-2 text-indigo-600 bg-indigo-50 rounded-full"><RefreshCw className="w-5 h-5" /></button>
+        </div>
       </header>
 
       <div className="flex-1 flex flex-col max-w-xl mx-auto w-full relative min-h-0">

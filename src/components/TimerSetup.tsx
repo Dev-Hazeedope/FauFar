@@ -23,21 +23,17 @@ export function TimerSetup({
       </div>
 
       {timedMode && (
-        <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg animate-in fade-in slide-in-from-top-2">
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Time Limit (seconds)</label>
-          <div className="flex gap-2 mb-3">
-            {[30, 60, 120, 300].map(t => (
-              <button key={t} type="button" onClick={() => setTimeLimit(t)} className={`flex-1 py-1.5 rounded border text-sm font-medium transition-colors ${timeLimit === t ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-700'}`}>
-                {t >= 60 ? `${t/60}m` : `${t}s`}
-              </button>
-            ))}
+        <div className="mt-6 bg-white p-6 rounded-3xl border border-slate-200 animate-in fade-in slide-in-from-top-2">
+          <h2 className="font-bold text-slate-800 mb-4">Time Limit (Minutes)</h2>
+          <div>
+            <input
+              type="number"
+              value={Math.max(1, Math.floor(timeLimit / 60))}
+              onChange={(e) => setTimeLimit(Math.max(1, parseInt(e.target.value) || 1) * 60)}
+              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              min="1"
+            />
           </div>
-          <input 
-            type="number" 
-            value={timeLimit}
-            onChange={(e) => setTimeLimit(parseInt(e.target.value) || 0)}
-            className="w-full p-3 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow text-lg"
-          />
         </div>
       )}
     </>

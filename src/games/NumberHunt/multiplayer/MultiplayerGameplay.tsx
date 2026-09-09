@@ -4,7 +4,9 @@ import { Board } from '../Board';
 import { PlacedNumber } from '../types';
 import { generateLayout } from '../layout';
 import { audio } from '../../../lib/audio';
+import { haptics } from '../../../lib/haptics';
 import { TimerDisplay } from '../../../components/TimerDisplay';
+import { EmojiReactions } from '../../../components/EmojiReactions';
 import { subscribeToRoom, startGame, leaveRoom, foundNumber, endGame, clientId } from './MultiplayerManager';
 
 interface Props {
@@ -52,7 +54,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
 
       // Detect game start
       if (prevRoom.state !== 'playing' && updatedRoom.state === 'playing') {
-        audio.playCorrect();
+        audio.playStart();
       }
 
       // Detect game end
@@ -64,7 +66,7 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
       // Detect number found
       if (updatedRoom.lastWinner && updatedRoom.lastWinner.timestamp > (prevRoom.lastWinner?.timestamp || 0)) {
         setWinnerAlert({ name: updatedRoom.lastWinner.name, points: updatedRoom.lastWinner.points });
-        audio.playCorrect();
+        audio.playFound();
         setTimeout(() => setWinnerAlert(null), 2000);
       }
 
@@ -100,8 +102,10 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
   const handleNumberClick = (num: number) => {
     if (num === room.currentNumber) {
       foundNumber(room.id, num);
+      haptics.vibrateSuccess();
     } else {
       audio.playWrong();
+      haptics.vibrateError();
     }
   };
 
@@ -232,6 +236,8 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
             </div>
           </div>
         )}
+        
+        <EmojiReactions roomId={room.id} collectionName="rooms" myPlayerId={clientId} lastReaction={(room as any).lastReaction} />
       </div>
     </div>
   );

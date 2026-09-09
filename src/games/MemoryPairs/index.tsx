@@ -1,10 +1,14 @@
 import { TimerSetup } from '../../components/TimerSetup';
 import { TimerDisplay } from '../../components/TimerDisplay';
 import React, { useState } from 'react';
-import { Home, RefreshCw, Users, User } from 'lucide-react';
+import { Home, RefreshCw, Users, User, Link } from 'lucide-react';
 import { SHARED_ICONS } from '../../lib/icons';
 import { shuffle } from '../../lib/utils';
 import { audio } from '../../lib/audio';
+import { haptics } from '../../lib/haptics';
+import { MultiplayerSetup } from './multiplayer/MultiplayerSetup';
+import { MultiplayerGameplay } from './multiplayer/MultiplayerGameplay';
+import { MultiplayerCompletion } from './multiplayer/MultiplayerCompletion';
 
 type Mode = 'solo' | 'two';
 type Difficulty = 6 | 8 | 12;
@@ -15,7 +19,12 @@ interface Card {
 }
 
 export function MemoryPairs({ onExit }: { onExit: () => void }) {
+  const [selectMode, setSelectMode] = useState<'SELECT' | 'LOCAL' | 'MULTI'>('SELECT');
   const [state, setState] = useState<'setup' | 'playing' | 'completed'>('setup');
+  
+  // Multiplayer state
+  const [room, setRoom] = useState<any>(null);
+
   const [timedMode, setTimedMode] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -74,6 +83,7 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
       if (c1 && c2 && c1.iconIdx === c2.iconIdx) {
         // Match
         audio.playComplete();
+        haptics.vibrateSuccess();
         const newMatched = [...matchedIds, c1.id, c2.id];
         setMatchedIds(newMatched);
         setRevealedIds([]); // automatically clear revealed because they are matched
@@ -90,6 +100,7 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
       } else {
         // No match - stay revealed until Continue
         audio.playWrong();
+        haptics.vibrateError();
       }
     }
   };
@@ -103,13 +114,83 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
     }
   };
 
+  if (selectMode === 'SELECT') {
+    return (
+      <div className="min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset flex flex-col">
+        <header className="flex items-center gap-4 mb-8">
+          <button onClick={onExit} className="p-3 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
+            <Home className="w-6 h-6" />
+          </button>
+          <h1 className="text-3xl font-black text-slate-900">Memory Pairs</h1>
+        </header>
+
+        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
+          <button
+            onClick={() => setSelectMode('LOCAL')}
+            className="w-full p-8 bg-indigo-600 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-indigo-600/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <User className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Local Play</h2>
+              <p className="text-indigo-100">Play solo or pass & play</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setSelectMode('MULTI')}
+            className="w-full p-8 bg-emerald-500 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-emerald-500/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <Link className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Online Multiplayer</h2>
+              <p className="text-emerald-100">Play with a friend remotely</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectMode === 'MULTI') {
+    if (!room) {
+      return (
+        <MultiplayerSetup 
+          onBack={() => setSelectMode('SELECT')} 
+          onJoinRoom={setRoom} 
+        />
+      );
+    }
+    
+    if (room.state === 'completed') {
+      return (
+        <MultiplayerCompletion
+          room={room}
+          onLeave={() => { setRoom(null); setSelectMode('SELECT'); }}
+          onRoomUpdated={setRoom}
+        />
+      );
+    }
+    
+    return (
+      <MultiplayerGameplay 
+        room={room} 
+        onLeave={() => { setRoom(null); setSelectMode('SELECT'); }} 
+        onGameEnded={setRoom}
+      />
+    );
+  }
+
   if (state === 'setup') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-[#fdfbf7] p-6 text-slate-800">
         <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
           <div className="flex items-center mb-6">
-             <button onClick={onExit} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><Home className="w-6 h-6" /></button>
-             <h1 className="text-2xl font-black ml-2 text-slate-900">Memory Pairs</h1>
+             <button onClick={() => setSelectMode('SELECT')} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><Home className="w-6 h-6" /></button>
+             <h1 className="text-2xl font-black ml-2 text-slate-900">Local Play</h1>
           </div>
           <p className="mb-6 text-slate-600">Find matching pairs. Leave non-matches visible until you're ready.</p>
           <TimerSetup timedMode={timedMode} setTimedMode={setTimedMode} timeLimit={timeLimit} setTimeLimit={setTimeLimit} />
@@ -147,8 +228,8 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
         <TimerDisplay timedMode={timedMode} timeLeft={timeLeft} setTimeLeft={setTimeLeft} isActive={state === 'playing'} onTimeUp={() => { setIsTimeUp(true); setState('completed'); }} />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={onExit} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
-            <span className="font-bold text-slate-900 ml-2">Memory Pairs</span>
+            <button onClick={() => setSelectMode('SELECT')} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
+            <span className="font-bold text-slate-900 ml-2">Local Play</span>
           </div>
           <button onClick={() => startRound(mode, diff, true)} className="p-2 text-indigo-600 bg-indigo-50 rounded-full"><RefreshCw className="w-5 h-5" /></button>
         </div>

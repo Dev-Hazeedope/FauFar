@@ -2,7 +2,16 @@ class AudioEngine {
   private ctx: AudioContext | null = null;
   public muted: boolean = false;
 
+  constructor() {
+    // Read initial mute state from local storage
+    const saved = localStorage.getItem('faufar_muted');
+    if (saved === 'true') {
+      this.muted = true;
+    }
+  }
+
   init() {
+    if (this.muted) return; // Don't init context if muted
     if (!this.ctx) {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioContextClass) {
@@ -16,6 +25,10 @@ class AudioEngine {
 
   toggleMute() {
     this.muted = !this.muted;
+    localStorage.setItem('faufar_muted', this.muted.toString());
+    if (!this.muted) {
+      this.init(); // initialize/resume if unmuted
+    }
   }
 
   private playTone(freq: number, type: OscillatorType, duration: number, vol: number = 0.1) {
@@ -41,10 +54,24 @@ class AudioEngine {
     }
   }
 
-  playCorrect() {
+  playStart() {
+    // A rising three-note sequence for starting the game
+    const notes = [440, 554.37, 659.25]; // A4, C#5, E5
+    notes.forEach((freq, i) => {
+      setTimeout(() => {
+        this.playTone(freq, 'square', 0.2, 0.1);
+      }, i * 150);
+    });
+  }
+
+  playFound() {
     // A pleasant high "ding"
     this.playTone(880, 'sine', 0.4, 0.15); // A5
     setTimeout(() => this.playTone(1108.73, 'sine', 0.6, 0.15), 100); // C#6
+  }
+
+  playCorrect() {
+    this.playFound();
   }
 
   playWrong() {

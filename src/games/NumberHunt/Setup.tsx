@@ -38,8 +38,8 @@ export function Setup({ initialConfig, onStart, onBack }: Props) {
       setError('Total numbers must be between 2 and 200.');
       return;
     }
-    if (timedMode && (isNaN(t) || t < 5)) {
-      setError('Please enter a valid time limit (minimum 5 seconds).');
+    if (timedMode && (isNaN(t) || t < 60)) {
+      setError('Please enter a valid time limit (minimum 1 minute).');
       return;
     }
 
@@ -118,21 +118,18 @@ export function Setup({ initialConfig, onStart, onBack }: Props) {
         </div>
 
         {timedMode && (
-          <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg animate-in fade-in slide-in-from-top-2">
-            <label htmlFor="timeLimit" className="block text-sm font-semibold text-slate-700 mb-2">Time Limit (seconds)</label>
-            <div className="flex gap-2 mb-3">
-              <button type="button" onClick={() => setTimeLimit('30')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">30s</button>
-              <button type="button" onClick={() => setTimeLimit('60')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">1m</button>
-              <button type="button" onClick={() => setTimeLimit('120')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">2m</button>
-              <button type="button" onClick={() => setTimeLimit('300')} className="flex-1 py-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-sm font-medium transition-colors">5m</button>
+          <div className="mb-6 bg-white p-6 rounded-3xl border border-slate-200 animate-in fade-in slide-in-from-top-2">
+            <h2 className="font-bold text-slate-800 mb-4">Time Limit (Minutes)</h2>
+            <div>
+              <input
+                id="timeLimit"
+                type="number" 
+                value={Math.max(1, Math.floor(parseInt(timeLimit) / 60) || 1)}
+                onChange={(e) => setTimeLimit((Math.max(1, parseInt(e.target.value) || 1) * 60).toString())}
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                min="1"
+              />
             </div>
-            <input 
-              id="timeLimit"
-              type="number" 
-              value={timeLimit}
-              onChange={(e) => setTimeLimit(e.target.value)}
-              className="w-full p-3 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow text-lg"
-            />
           </div>
         )}
 

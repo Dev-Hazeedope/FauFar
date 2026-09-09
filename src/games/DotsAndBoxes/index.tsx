@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
-import { Home, RefreshCw } from 'lucide-react';
+import { Home, RefreshCw, Users, User } from 'lucide-react';
 import { TimerSetup } from '../../components/TimerSetup';
 import { TimerDisplay } from '../../components/TimerDisplay';
 import { audio } from '../../lib/audio';
+import { MultiplayerSetup } from './multiplayer/MultiplayerSetup';
+import { MultiplayerGameplay } from './multiplayer/MultiplayerGameplay';
+import { MultiplayerCompletion } from './multiplayer/MultiplayerCompletion';
 
 type Phase = 'setup' | 'playing' | 'completed';
 type BoardSize = 4 | 6 | 8; // dots per side
 
 export function DotsAndBoxes({ onExit }: { onExit: () => void }) {
+  const [mode, setMode] = useState<'SELECT' | 'SINGLE' | 'MULTI'>('SELECT');
   const [phase, setPhase] = useState<any>('setup');
+  
+  // Multiplayer state
+  const [room, setRoom] = useState<any>(null);
   const [timedMode, setTimedMode] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -40,6 +47,76 @@ export function DotsAndBoxes({ onExit }: { onExit: () => void }) {
     setPhase('playing');
     audio.init();
   };
+
+  if (mode === 'SELECT') {
+    return (
+      <div className="min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset flex flex-col">
+        <header className="flex items-center gap-4 mb-8">
+          <button onClick={onExit} className="p-3 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
+            <Home className="w-6 h-6" />
+          </button>
+          <h1 className="text-3xl font-black text-slate-900">Dots & Boxes</h1>
+        </header>
+
+        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
+          <button
+            onClick={() => setMode('SINGLE')}
+            className="w-full p-8 bg-indigo-600 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-indigo-600/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <User className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Local Play</h2>
+              <p className="text-indigo-100">Pass and play on this device</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setMode('MULTI')}
+            className="w-full p-8 bg-emerald-500 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-emerald-500/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <Users className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Multiplayer</h2>
+              <p className="text-emerald-100">Play against a friend online</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'MULTI') {
+    if (!room) {
+      return (
+        <MultiplayerSetup 
+          onBack={() => setMode('SELECT')} 
+          onJoinRoom={setRoom} 
+        />
+      );
+    }
+    
+    if (room.state === 'completed') {
+      return (
+        <MultiplayerCompletion
+          room={room}
+          onLeave={() => { setRoom(null); setMode('SELECT'); }}
+          onRoomUpdated={setRoom}
+        />
+      );
+    }
+    
+    return (
+      <MultiplayerGameplay 
+        room={room} 
+        onLeave={() => { setRoom(null); setMode('SELECT'); }} 
+        onGameEnded={setRoom}
+      />
+    );
+  }
 
   const handleEdgeClick = (type: 'h' | 'v', r: number, c: number) => {
     if (phase !== 'playing') return;
@@ -103,8 +180,8 @@ export function DotsAndBoxes({ onExit }: { onExit: () => void }) {
       <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-[#fdfbf7] p-6 text-slate-800">
         <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
           <div className="flex items-center mb-6">
-             <button onClick={onExit} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><Home className="w-6 h-6" /></button>
-             <h1 className="text-2xl font-black ml-2 text-slate-900">Dots & Boxes</h1>
+             <button onClick={() => setMode('SELECT')} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><Home className="w-6 h-6" /></button>
+             <h1 className="text-2xl font-black ml-2 text-slate-900">Local Play</h1>
           </div>
           <p className="mb-6 text-slate-600">Connect dots to claim boxes. Completing a box gives you another turn!</p>
           <TimerSetup timedMode={timedMode} setTimedMode={setTimedMode} timeLimit={timeLimit} setTimeLimit={setTimeLimit} />
@@ -137,8 +214,8 @@ export function DotsAndBoxes({ onExit }: { onExit: () => void }) {
         <TimerDisplay timedMode={timedMode} timeLeft={timeLeft} setTimeLeft={setTimeLeft} isActive={phase === 'playing'} onTimeUp={() => { setIsTimeUp(true); setPhase('completed'); }} />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={onExit} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
-            <span className="font-bold text-slate-900 ml-2">Dots & Boxes</span>
+            <button onClick={() => setMode('SELECT')} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
+            <span className="font-bold text-slate-900 ml-2">Local Play</span>
           </div>
           <button onClick={() => startRound(size, true)} className="p-2 text-indigo-600 bg-indigo-50 rounded-full"><RefreshCw className="w-5 h-5" /></button>
         </div>

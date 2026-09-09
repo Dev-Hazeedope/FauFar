@@ -3,15 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { games } from './games/registry';
-import { Dices } from 'lucide-react';
+import { Dices, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { audio } from './lib/audio';
 
 export default function App() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(audio.muted);
+  
+  const toggleMute = () => {
+    audio.toggleMute();
+    setIsMuted(audio.muted);
+  };
   
   const GameComponent = activeGame ? games.find(g => g.id === activeGame)?.component : null;
 
@@ -45,6 +52,13 @@ export default function App() {
                 <Dices className="w-10 h-10 text-indigo-600" />
                 <h1 className="text-4xl font-black tracking-tight text-slate-900">FauFar Games</h1>
               </div>
+              <button 
+                onClick={toggleMute}
+                className="p-3 text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-50 rounded-full border border-slate-200 shadow-sm transition-colors"
+                title={isMuted ? "Unmute sound" : "Mute sound"}
+              >
+                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              </button>
             </header>
 
             <p className="text-lg text-slate-600 mb-8 max-w-2xl">

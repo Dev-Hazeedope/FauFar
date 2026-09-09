@@ -3,6 +3,7 @@ import { GameConfig, PlacedNumber } from './types';
 import { generateLayout } from './layout';
 import { shuffle } from '../../lib/utils';
 import { audio } from '../../lib/audio';
+import { haptics } from '../../lib/haptics';
 import { Board } from './Board';
 import { Volume2, VolumeX, Lightbulb, RefreshCw, Home, Settings2, Timer as TimerIcon } from 'lucide-react';
 
@@ -101,6 +102,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
     
     if (val === target) {
       audio.playCorrect();
+      haptics.vibrateSuccess();
             
       const nextFound = new Set(found);
       nextFound.add(val);
@@ -113,6 +115,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
       }
     } else {
       audio.playWrong();
+      haptics.vibrateError();
     }
   };
 

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Home, RefreshCw } from 'lucide-react';
+import { Home, RefreshCw, Users, User } from 'lucide-react';
 import { TimerSetup } from '../../components/TimerSetup';
 import { TimerDisplay } from '../../components/TimerDisplay';
 import { audio } from '../../lib/audio';
+import { MultiplayerSetup } from './multiplayer/MultiplayerSetup';
+import { MultiplayerGameplay } from './multiplayer/MultiplayerGameplay';
+import { MultiplayerCompletion } from './multiplayer/MultiplayerCompletion';
 
 type Phase = 'setup' | 'playing' | 'completed';
 
@@ -10,7 +13,11 @@ const COLS = 9;
 const ROWS = 7;
 
 export function FourInARow({ onExit }: { onExit: () => void }) {
+  const [mode, setMode] = useState<'SELECT' | 'SINGLE' | 'MULTI'>('SELECT');
   const [phase, setPhase] = useState<Phase>('setup');
+  
+  // Multiplayer state
+  const [room, setRoom] = useState<any>(null);
   const [timedMode, setTimedMode] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -38,6 +45,76 @@ export function FourInARow({ onExit }: { onExit: () => void }) {
     setPhase('playing');
     audio.init();
   };
+
+  if (mode === 'SELECT') {
+    return (
+      <div className="min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset flex flex-col">
+        <header className="flex items-center gap-4 mb-8">
+          <button onClick={onExit} className="p-3 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
+            <Home className="w-6 h-6" />
+          </button>
+          <h1 className="text-3xl font-black text-slate-900">Four in a Row</h1>
+        </header>
+
+        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
+          <button
+            onClick={() => setMode('SINGLE')}
+            className="w-full p-8 bg-indigo-600 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-indigo-600/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <User className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Local Play</h2>
+              <p className="text-indigo-100">Pass and play on this device</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setMode('MULTI')}
+            className="w-full p-8 bg-emerald-500 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-emerald-500/20"
+          >
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+              <Users className="w-8 h-8" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-1">Multiplayer</h2>
+              <p className="text-emerald-100">Play against a friend online</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'MULTI') {
+    if (!room) {
+      return (
+        <MultiplayerSetup 
+          onBack={() => setMode('SELECT')} 
+          onJoinRoom={setRoom} 
+        />
+      );
+    }
+    
+    if (room.state === 'completed') {
+      return (
+        <MultiplayerCompletion
+          room={room}
+          onLeave={() => { setRoom(null); setMode('SELECT'); }}
+          onRoomUpdated={setRoom}
+        />
+      );
+    }
+    
+    return (
+      <MultiplayerGameplay 
+        room={room} 
+        onLeave={() => { setRoom(null); setMode('SELECT'); }} 
+        onGameEnded={setRoom}
+      />
+    );
+  }
 
   const checkWin = (b: (1|2|null)[][], c: number, r: number, p: 1|2) => {
     const dirs = [[1,0], [0,1], [1,1], [1,-1]];
@@ -108,10 +185,10 @@ export function FourInARow({ onExit }: { onExit: () => void }) {
       <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] text-slate-800 safe-area-inset items-center justify-center p-4">
         <div className="w-full max-w-md bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
           <div className="flex items-center mb-6">
-            <button onClick={onExit} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
+            <button onClick={() => setMode('SELECT')} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
               <Home className="w-6 h-6" />
             </button>
-            <h1 className="text-2xl font-black ml-2 text-slate-900">Four in a Row</h1>
+            <h1 className="text-2xl font-black ml-2 text-slate-900">Local Play</h1>
           </div>
           <p className="mb-6 text-slate-600">Connect 4 pieces horizontally, vertically, or diagonally.</p>
           <TimerSetup timedMode={timedMode} setTimedMode={setTimedMode} timeLimit={timeLimit} setTimeLimit={setTimeLimit} />
@@ -128,8 +205,8 @@ export function FourInARow({ onExit }: { onExit: () => void }) {
       <header className="flex flex-col p-4 bg-white/80 backdrop-blur border-b border-slate-200 shrink-0 gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={onExit} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
-            <span className="font-bold text-slate-900 ml-2">Four in a Row</span>
+            <button onClick={() => setMode('SELECT')} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full"><Home className="w-5 h-5" /></button>
+            <span className="font-bold text-slate-900 ml-2">Local Play</span>
           </div>
           <button onClick={() => startRound(true)} className="p-2 text-indigo-600 bg-indigo-50 rounded-full"><RefreshCw className="w-5 h-5" /></button>
         </div>
