@@ -61,7 +61,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
           <h3 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm">Players</h3>
           <div className="space-y-3">
-            {Object.values(room.players).map((p: any) => (
+            {Object.values(room.players).sort((a: any, b: any) => (room.scores ? room.scores[b.number] - room.scores[a.number] : (room.guesses ? room.guesses[a.number] - room.guesses[b.number] : 0))).map((p: any) => (
               <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{p.avatar}</span>

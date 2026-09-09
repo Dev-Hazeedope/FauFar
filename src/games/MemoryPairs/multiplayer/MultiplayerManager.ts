@@ -26,13 +26,12 @@ export interface MPRoom {
   
   // Game State
   cards: Card[];
-  revealedIds: string[];
   matchedIds: string[];
   scores: { 1: number, 2: number };
-  turn: 1 | 2;
   endTime: number | null;
   winner: string | null;
   isDraw: boolean;
+  lastWinner?: { name: string, points: number, timestamp: number };
 }
 
 const getClientId = () => {
@@ -116,35 +115,49 @@ export const startGame = async (roomId: string) => {
       state: 'playing',
       endTime: room.config.timeLimit > 0 ? Date.now() + room.config.timeLimit * 1000 : null,
       cards: generateCards(room.config.pairsCount),
-      revealedIds: [],
       matchedIds: [],
       scores: { 1: 0, 2: 0 },
-      turn: 1,
       winner: null,
       isDraw: false
     });
   });
 };
 
-export const makeMove = async (
-  roomId: string, 
-  revealedIds: string[], 
-  matchedIds: string[], 
-  scores: { 1: number, 2: number },
-  nextTurn: 1 | 2,
-  isCompleted: boolean
-) => {
+export const claimPair = async (roomId: string, playerNum: 1 | 2, c1Id: string, c2Id: string, playerName: string) => {
   const roomRef = doc(db, 'mp_rooms', roomId);
   
-  let winner: string | null = null;
-  let isDraw = false;
+  await runTransaction(db, async (transaction) => {
+    const roomDoc = await transaction.get(roomRef);
+    if (!roomDoc.exists()) return;
+    const room = roomDoc.data() as MPRoom;
+    
+    // Check if either card was already matched by someone else
+    if (room.matchedIds.includes(c1Id) || room.matchedIds.includes(c2Id)) {
+      return; // abort, already claimed
+    }
 
-  await updateDoc(roomRef, {
-    revealedIds,
-    matchedIds,
-    scores,
-    turn: nextTurn,
-    state: isCompleted ? 'completed' : 'playing'
+    const newScores = { ...room.scores };
+    newScores[playerNum] += 10;
+    
+    let newMatchedIds = [...room.matchedIds, c1Id, c2Id];
+    let newCards = room.cards;
+    
+    // If all cards matched, generate new board
+    if (newMatchedIds.length >= room.cards.length) {
+      newCards = generateCards(room.config.pairsCount);
+      newMatchedIds = [];
+    }
+
+    transaction.update(roomRef, {
+      cards: newCards,
+      matchedIds: newMatchedIds,
+      scores: newScores,
+      lastWinner: {
+        name: playerName,
+        points: 10,
+        timestamp: Date.now()
+      }
+    });
   });
 };
 

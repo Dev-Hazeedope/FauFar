@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { LogOut, Users, Play, Copy, Check } from 'lucide-react';
+import { LogOut, Users, Play, Copy, Check, Trophy } from 'lucide-react';
 import { subscribeToRoom, startGame, leaveRoom, claimPair, setGameCompleted, clientId, FTTRoom } from './MultiplayerManager';
 import { TimerDisplay } from '../../../components/TimerDisplay';
 import { audio } from '../../../lib/audio';
 import { haptics } from '../../../lib/haptics';
 import { SHARED_ICONS } from '../../../lib/icons';
+import { EmojiReactions } from '../../../components/EmojiReactions';
 
 interface Props {
   room: FTTRoom;
@@ -22,6 +23,7 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
   const myPlayer = room.players[clientId];
   
   const [timeLeft, setTimeLeft] = useState(room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0);
+  const [winnerAlert, setWinnerAlert] = useState<{name: string, points: number} | null>(null);
   
   // Local interaction state
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -58,6 +60,11 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
           setSelectedId(null);
           setFoundIds([]);
         }
+      }
+      
+      if (updatedRoom.lastWinner && updatedRoom.lastWinner.timestamp > (prevRoom.lastWinner?.timestamp || 0)) {
+        setWinnerAlert({ name: updatedRoom.lastWinner.name, points: updatedRoom.lastWinner.points });
+        setTimeout(() => setWinnerAlert(null), 2000);
       }
 
       prevRoomRef.current = updatedRoom;
@@ -100,7 +107,7 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
       setFoundIds([selectedId, item.id]);
       setSelectedId(null);
       // Let the cloud function or transaction handle it
-      claimPair(room.id, myPlayer.number, room.scores, room.config.difficulty);
+      claimPair(room.id, myPlayer.number, room.scores, room.config.difficulty, myPlayer.name);
       haptics.vibrateSuccess();
     } else {
       // Mismatch
@@ -227,7 +234,7 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4 flex content-start flex-wrap gap-2 justify-center pb-24">
+      <main className="flex-1 relative overflow-y-auto p-4 flex content-start flex-wrap gap-2 justify-center pb-24">
         {room.items.map((item) => {
           const Icon = Array.from(SHARED_ICONS.values())[item.iconIdx];
           const isSelected = selectedId === item.id;
@@ -249,7 +256,20 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
             </button>
           );
         })}
+        
+        {winnerAlert && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+            <div className="bg-slate-900/90 text-white px-8 py-6 rounded-3xl animate-in zoom-in slide-in-from-bottom-8 flex flex-col items-center gap-2 shadow-2xl">
+              <Trophy className="w-12 h-12 text-yellow-400 mb-2" />
+              <div className="text-xl font-medium text-slate-300">Found by</div>
+              <div className="text-3xl font-black">{winnerAlert.name}</div>
+              <div className="text-yellow-400 font-bold mt-2">+{winnerAlert.points} points</div>
+            </div>
+          </div>
+        )}
       </main>
+      
+      <EmojiReactions roomId={room.id} collectionName="ftt_rooms" myPlayerId={clientId} lastReaction={(room as any).lastReaction} />
     </div>
   );
 }

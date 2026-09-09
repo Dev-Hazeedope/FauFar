@@ -25,6 +25,7 @@ export interface FTTRoom {
   endTime: number | null;
   winner: string | null;
   isDraw: boolean;
+  lastWinner?: { name: string, points: number, timestamp: number };
 }
 
 const getClientId = () => {
@@ -127,7 +128,7 @@ export const startGame = async (roomId: string) => {
   });
 };
 
-export const claimPair = async (roomId: string, playerNum: 1 | 2, currentScores: { 1: number, 2: number }, difficulty: 'easy'|'medium'|'hard') => {
+export const claimPair = async (roomId: string, playerNum: 1 | 2, currentScores: { 1: number, 2: number }, difficulty: 'easy'|'medium'|'hard', playerName: string) => {
   const roomRef = doc(db, 'ftt_rooms', roomId);
   
   await runTransaction(db, async (transaction) => {
@@ -142,11 +143,16 @@ export const claimPair = async (roomId: string, playerNum: 1 | 2, currentScores:
     // the first transaction resolves, generating a new board. The second transaction runs with the NEW board data.
     
     const newScores = { ...room.scores };
-    newScores[playerNum] += 1;
+    newScores[playerNum] += 10;
 
     transaction.update(roomRef, {
       items: generateBoard(difficulty),
-      scores: newScores
+      scores: newScores,
+      lastWinner: {
+        name: playerName,
+        points: 10,
+        timestamp: Date.now()
+      }
     });
   });
 };
