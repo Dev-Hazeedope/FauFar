@@ -5,5 +5,20 @@ service cloud.firestore {
     match /rooms/{roomId} {
       allow read, write: if true;
     }
+    match /ctc_rooms/{roomId} {
+      allow read, write: if true;
+    }
+    match /dab_rooms/{roomId} {
+      allow read, write: if true;
+    }
+    match /ftt_rooms/{roomId} {
+      allow read, write: if true;
+    }
+    match /fiar_rooms/{roomId} {
+      allow read, write: if true;
+    }
+    match /mp_rooms/{roomId} {
+      allow read, write: if true;
+    }
   }
 }

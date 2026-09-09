@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { LogOut, Users, Play, Copy, Check, Delete } from 'lucide-react';
+import { LogOut, Users, Play, Copy, Check, Delete, X } from 'lucide-react';
 import { subscribeToRoom, startGame, leaveRoom, incrementGuess, claimVictory, setGameCompleted, clientId, CTCRoom } from './MultiplayerManager';
 import { TimerDisplay } from '../../../components/TimerDisplay';
 import { audio } from '../../../lib/audio';
@@ -204,8 +204,8 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
   }
 
   // Gameplay View
-  const player1 = Object.values(room.players).find(p => p.number === 1);
-  const player2 = Object.values(room.players).find(p => p.number === 2);
+  const player1 = Object.values(room.players).find((p: any) => p.number === 1) as any;
+  const player2 = Object.values(room.players).find((p: any) => p.number === 2) as any;
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] text-slate-800 safe-area-inset">
