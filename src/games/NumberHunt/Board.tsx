@@ -22,7 +22,7 @@ export function Board({ layout, found, currentTarget, onTap }: Props) {
             disabled={isFound}
             onClick={() => onTap(item.value)}
             className={cn(
-              "absolute flex items-center justify-center rounded-xl font-black font-fredoka touch-manipulation tap-highlight-transparent leading-none drop-shadow-md",
+              "absolute flex items-center justify-center rounded-xl font-black font-outfit touch-manipulation tap-highlight-transparent leading-none drop-shadow-md",
               isFound ? "text-slate-300 pointer-events-none opacity-50" : "active:scale-95 transition-transform",
               
             )}

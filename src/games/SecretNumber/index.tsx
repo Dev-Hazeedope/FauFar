@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, User, Home, Dices, Info } from 'lucide-react';
 import { Illustration } from '../../components/Illustration';
 import { MultiplayerSetup } from './multiplayer/MultiplayerSetup';
@@ -6,6 +6,7 @@ import { MultiplayerGameplay } from './multiplayer/MultiplayerGameplay';
 import { MultiplayerCompletion } from './multiplayer/MultiplayerCompletion';
 import { SinglePlayer } from './singleplayer/SinglePlayer';
 import { HowToPlayModal } from '../../components/HowToPlayModal';
+import { audio } from '../../lib/audio';
 
 type Mode = 'SELECT' | 'SINGLE' | 'MULTI';
 type MultiState = 'SETUP' | 'LOBBY_OR_PLAYING' | 'COMPLETED';
@@ -15,6 +16,15 @@ interface Props {
 }
 
 export function SecretNumber({ onExit }: Props) {
+  useEffect(() => {
+    // Start BGM when entering the game
+    audio.playBGM();
+    return () => {
+      // Stop BGM when leaving the game
+      audio.stopBGM();
+    };
+  }, []);
+
   const [mode, setMode] = useState<Mode>('SELECT');
   const [multiState, setMultiState] = useState<MultiState>('SETUP');
   const [room, setRoom] = useState<any>(null);
@@ -91,7 +101,7 @@ export function SecretNumber({ onExit }: Props) {
       />
       <div className="w-full max-w-md game-panel">
         <div className="flex justify-between items-start mb-6">
-          <Illustration emoji="🎲" shape="circle" color="#FFDE59" className="scale-[0.5] -ml-6 -mt-6" />
+          <Illustration emoji="🤫" shape="square" color="#FF914D" className="scale-[0.5] -ml-6 -mt-6" />
           <div className="flex gap-2">
             <button onClick={() => setShowHowToPlay(true)} className="game-avatar text-white !bg-[#5CE1E6] hover:!bg-[#4bd8dd] cursor-pointer">
               <Info className="w-6 h-6" />
@@ -108,7 +118,7 @@ export function SecretNumber({ onExit }: Props) {
         <div className="space-y-4">
           <button 
             onClick={() => setMode('SINGLE')}
-            className="w-full p-6 game-card bg-white p-6 flex items-center gap-6 w-full cursor-pointer"
+            className="w-full p-4 sm:p-6 game-card bg-white p-4 sm:p-6 flex items-center gap-4 sm:gap-6 w-full cursor-pointer group"
           >
             <Illustration emoji="🎮" shape="square" color="#5CE1E6" className="scale-[0.6] -ml-4" />
             <div className="text-left">
@@ -119,11 +129,11 @@ export function SecretNumber({ onExit }: Props) {
 
           <button 
             onClick={() => { setMode('MULTI'); setMultiState('SETUP'); }}
-            className="w-full p-6 game-card bg-white p-6 flex items-center gap-6 w-full cursor-pointer"
+            className="w-full p-4 sm:p-6 game-card bg-white p-4 sm:p-6 flex items-center gap-4 sm:gap-6 w-full cursor-pointer group"
           >
             <Illustration emoji="🌍" shape="blob" color="#C1FF72" className="scale-[0.6] -ml-4" />
             <div className="text-left">
-              <div className="font-black text-lg text-slate-800 group-hover:text-indigo-900">Multiplayer</div>
+              <div className="font-black text-lg text-slate-800 group-hover:text-indigo-900">Online Multiplayer</div>
               <div className="text-sm text-slate-500 font-medium mt-1">Play with a friend</div>
             </div>
           </button>

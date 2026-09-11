@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Illustration } from '../../components/Illustration';
 import { Home, RefreshCw } from 'lucide-react';
 import { TimerSetup } from '../../components/TimerSetup';
@@ -10,6 +10,15 @@ import { audio } from '../../lib/audio';
 type Phase = 'setup' | 'study' | 'challenge' | 'completed';
 
 export function WhatsMissing({ onExit }: { onExit: () => void }) {
+  useEffect(() => {
+    // Start BGM when entering the game
+    audio.playBGM();
+    return () => {
+      // Stop BGM when leaving the game
+      audio.stopBGM();
+    };
+  }, []);
+
   const [phase, setPhase] = useState<Phase>('setup');
   const [timedMode, setTimedMode] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
@@ -78,17 +87,23 @@ export function WhatsMissing({ onExit }: { onExit: () => void }) {
     return (
       <div className="game-screen items-center justify-center relative">
         <div className="w-full max-w-md game-panel">
-          <div className="flex items-center mb-6">
-             <button onClick={onExit} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer"><Home className="w-6 h-6" /></button>
-             <h1 className="game-title-sm ml-2 !text-slate-900 !stroke-none !shadow-none">What's Missing?</h1>
+          <div className="flex justify-between items-start mb-6">
+            <Illustration emoji="🕵️" shape="blob" color="#FFDE59" className="scale-[0.5] -ml-6 -mt-6" />
+            <div className="flex gap-2">
+              <button onClick={onExit} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer transition-transform active:scale-95">
+                <Home className="w-6 h-6" />
+              </button>
+            </div>
           </div>
-          <p className="mb-6 text-slate-600">Study the objects. After they hide, identify what disappeared.</p>
+          
+          <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none mb-2">What's Missing?</h1>
+          <p className="text-slate-500 font-medium mb-8 text-center leading-relaxed">Study the objects. After they hide, identify what disappeared.</p>
           <TimerSetup timedMode={timedMode} setTimedMode={setTimedMode} timeLimit={timeLimit} setTimeLimit={setTimeLimit} />
           
-          <div className="space-y-3">
-            <button onClick={() => startStudy(12, 2)} className="w-full py-4 game-button-secondary text-sm">12 Objects (2 Missing)</button>
-            <button onClick={() => startStudy(16, 3)} className="w-full py-4 game-button-secondary text-sm">16 Objects (3 Missing)</button>
-            <button onClick={() => startStudy(20, 4)} className="w-full py-4 game-button-secondary text-sm">20 Objects (4 Missing)</button>
+          <div className="space-y-4 mt-6">
+            <button onClick={() => startStudy(12, 2)} className="w-full p-4 game-button-secondary text-sm">12 Objects (2 Missing)</button>
+            <button onClick={() => startStudy(16, 3)} className="w-full p-4 game-button-secondary text-sm">16 Objects (3 Missing)</button>
+            <button onClick={() => startStudy(20, 4)} className="w-full p-4 game-button-secondary text-sm">20 Objects (4 Missing)</button>
           </div>
         </div>
       </div>

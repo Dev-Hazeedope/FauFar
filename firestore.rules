@@ -20,5 +20,8 @@ service cloud.firestore {
     match /mp_rooms/{roomId} {
       allow read, write: if true;
     }
+    match /sn_rooms/{roomId} {
+      allow read, write: if true;
+    }
   }
 }

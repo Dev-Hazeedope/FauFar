@@ -56,13 +56,16 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
       const entry = entries[0];
       if (!entry) return;
       const { width: w, height: h } = entry.contentRect;
+      // Subtract 8px for the border-4 on the Board component
+      const innerW = w - 8;
+      const innerH = h - 8;
       
-      if (w > 100 && h > 100) {
+      if (innerW > 100 && innerH > 100) {
         if (!initialized) {
-          baseSize.current = { w, h };
-          initBoard(w, h);
+          baseSize.current = { w: innerW, h: innerH };
+          initBoard(innerW, innerH);
           initialized = true;
-        } else if (baseSize.current && (w < baseSize.current.w - 20 || h < baseSize.current.h - 20)) {
+        } else if (baseSize.current && (innerW < baseSize.current.w - 20 || innerH < baseSize.current.h - 20)) {
           setResizeError(true);
         }
       }
@@ -91,10 +94,13 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
 
   const handleRestart = () => {
     if (!boardContainerRef.current) return;
-    const w = boardContainerRef.current.clientWidth;
-    const h = boardContainerRef.current.clientHeight;
-    baseSize.current = { w, h };
-    initBoard(w, h);
+    // clientWidth includes padding. We want the content box, so we subtract padding.
+    // However, it's safer to just use the baseSize we already stored, or recalculate carefully.
+    // Since we know baseSize has the correct content dimensions from ResizeObserver:
+    if (baseSize.current) {
+      initBoard(baseSize.current.w, baseSize.current.h);
+    }
+  
   };
 
   const handleTap = (val: number) => {
@@ -151,7 +157,7 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
         )}
         
         <div 
-          className="font-fredoka text-3xl font-black text-slate-900 bg-[#5CE1E6] px-6 py-2 rounded-2xl border-4 border-slate-900 shadow-[4px_4px_0_0_#0f172a]"
+          className="font-outfit text-3xl font-black text-slate-900 bg-[#5CE1E6] px-6 py-2 rounded-2xl border-4 border-slate-900 shadow-[4px_4px_0_0_#0f172a]"
           aria-live="polite"
         >
           {currentTarget !== null ? `Find: ${currentTarget}` : 'Done!'}

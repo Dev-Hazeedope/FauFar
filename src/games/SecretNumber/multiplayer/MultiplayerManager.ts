@@ -77,6 +77,11 @@ export const joinRoom = async (roomId: string, name: string, avatar: string): Pr
       throw new Error("Game already started");
     }
     
+    const playerCount = Object.keys(room.players).length;
+    if (playerCount >= 50 && !room.players[clientId]) {
+      throw new Error("Room is full (max 50 players)");
+    }
+
     const nameExists = Object.values(room.players).some(p => p.name.toLowerCase() === name.toLowerCase());
     if (nameExists && !room.players[clientId]) {
       throw new Error("Name already taken in this room");

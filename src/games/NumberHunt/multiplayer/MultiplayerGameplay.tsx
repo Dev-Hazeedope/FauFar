@@ -96,9 +96,12 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
       const entry = entries[0];
       if (!entry) return;
       const { width: w, height: h } = entry.contentRect;
+      // Subtract 8px for the border-4 on the Board component
+      const innerW = w - 8;
+      const innerH = h - 8;
       
-      if (w > 100 && h > 100 && !currentLayoutGenerated) {
-        setLayout(generateLayout(room.config.start, room.config.end, w, h));
+      if (innerW > 100 && innerH > 100 && !currentLayoutGenerated) {
+        setLayout(generateLayout(room.config.start, room.config.end, innerW, innerH));
         currentLayoutGenerated = true;
       }
     });

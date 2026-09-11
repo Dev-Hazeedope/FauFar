@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Illustration } from '../../components/Illustration';
 import { Home, RefreshCw, X, Delete, Users, User, Link, Info } from 'lucide-react';
 
@@ -16,6 +16,15 @@ type Phase = 'setup' | 'playing' | 'completed';
 const SYMBOLS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export function CrackTheCode({ onExit }: { onExit: () => void }) {
+  useEffect(() => {
+    // Start BGM when entering the game
+    audio.playBGM();
+    return () => {
+      // Stop BGM when leaving the game
+      audio.stopBGM();
+    };
+  }, []);
+
   const [selectMode, setSelectMode] = useState<'SELECT' | 'LOCAL' | 'MULTI'>('SELECT');
   const [phase, setPhase] = useState<any>('setup');
   const [showHowToPlay, setShowHowToPlay] = useState(false);
@@ -95,55 +104,58 @@ export function CrackTheCode({ onExit }: { onExit: () => void }) {
 
   if (selectMode === 'SELECT') {
     return (
-      <div className="game-screen relative">
+      <div className="game-screen items-center justify-center relative">
         <HowToPlayModal 
           isOpen={showHowToPlay}
           onClose={() => setShowHowToPlay(false)}
           title="Crack the Code"
           instructions={[
-            "Guess the secret 4-digit code using the numbers 1 through 8.",
-            "After each guess, you will receive clues about how close you are.",
-            "A green clue means a number is correct and in the right position.",
-            "A yellow clue means a number is part of the code, but in the wrong position.",
+            "The app hides 4 distinct numbers (1-8) in a secret order.",
+            "You have 4 slots to fill with your guesses.",
+            "Submit your guess to receive a clue:",
+            "'Exact': The number is correct and in the right position.",
+            "'Misplaced': The number is in the code but in the wrong position.",
             "Use the clues to deduce the secret code!"
           ]}
         />
-        <header className="flex items-center gap-4 mb-8 justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={onExit} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer">
-              <Home className="w-6 h-6" />
-            </button>
-            <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none">Crack the Code</h1>
+        <div className="w-full max-w-md game-panel">
+          <div className="flex justify-between items-start mb-6">
+            <Illustration emoji="🔐" shape="star" color="#FF5757" className="scale-[0.5] -ml-6 -mt-6" />
+            <div className="flex gap-2">
+              <button onClick={() => setShowHowToPlay(true)} className="game-avatar text-white !bg-[#5CE1E6] hover:!bg-[#4bd8dd] cursor-pointer transition-transform active:scale-95">
+                <Info className="w-6 h-6" />
+              </button>
+              <button onClick={onExit} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer transition-transform active:scale-95">
+                <Home className="w-6 h-6" />
+              </button>
+            </div>
           </div>
-          <button onClick={() => setShowHowToPlay(true)} className="game-avatar text-white !bg-[#5CE1E6] hover:!bg-[#4bd8dd] cursor-pointer">
-            <Info className="w-6 h-6" />
-          </button>
-        </header>
+          
+          <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none mb-2">Crack the Code</h1>
+          <p className="text-slate-500 font-medium mb-8 text-center leading-relaxed">Guess the 4-digit code using logic and clues.</p>
 
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
-          <button
-            onClick={() => setSelectMode('LOCAL')}
-            className="game-card bg-[#5CE1E6] p-8 flex flex-col items-center gap-4 w-full cursor-pointer"
-          >
-            <Illustration emoji="🎮" shape="square" color="#ffffff" className="scale-75" />
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-1">Local Play</h2>
-              <p className="text-slate-800">Play solo</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setSelectMode('MULTI')}
-            className="game-card bg-[#C1FF72] p-8 flex flex-col items-center gap-4 w-full cursor-pointer"
-          >
-            <div className="w-16 h-16 bg-white shadow-[2px_2px_0_0_#0f172a] border-4 border-slate-900 rounded-2xl flex items-center justify-center">
-              <Link className="w-8 h-8" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-1">Online Multiplayer</h2>
-              <p className="text-slate-800">Race to crack the code first</p>
-            </div>
-          </button>
+          <div className="space-y-4">
+            <button 
+              onClick={() => setSelectMode('LOCAL')}
+              className="w-full p-4 sm:p-6 game-card bg-white p-4 sm:p-6 flex items-center gap-4 sm:gap-6 w-full cursor-pointer group"
+            >
+              <Illustration emoji="🎮" shape="square" color="#5CE1E6" className="scale-[0.6] -ml-4" />
+              <div className="text-left">
+                <div className="font-black text-lg text-slate-800 group-hover:text-indigo-900">Local Play</div>
+                <div className="text-sm text-slate-500 font-medium mt-1">Play solo on this device</div>
+              </div>
+            </button>
+            <button 
+              onClick={() => { setSelectMode('MULTI');  }}
+              className="w-full p-4 sm:p-6 game-card bg-white p-4 sm:p-6 flex items-center gap-4 sm:gap-6 w-full cursor-pointer group"
+            >
+              <Illustration emoji="🌍" shape="blob" color="#C1FF72" className="scale-[0.6] -ml-4" />
+              <div className="text-left">
+                <div className="font-black text-lg text-slate-800 group-hover:text-indigo-900">Online Multiplayer</div>
+                <div className="text-sm text-slate-500 font-medium mt-1">Race to crack the code first</div>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     );

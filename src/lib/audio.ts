@@ -1,12 +1,21 @@
 class AudioEngine {
   private ctx: AudioContext | null = null;
   public muted: boolean = false;
+  private bgmAudio: HTMLAudioElement | null = null;
+  private isBgmPlaying: boolean = false;
 
   constructor() {
     // Read initial mute state from local storage
     const saved = localStorage.getItem('faufar_muted');
     if (saved === 'true') {
       this.muted = true;
+    }
+    
+    // Initialize Background Music
+    if (typeof window !== 'undefined') {
+      this.bgmAudio = new Audio('/bg-music.mp3');
+      this.bgmAudio.loop = true;
+      this.bgmAudio.volume = 0.3; // Lower volume for background
     }
   }
 
@@ -26,8 +35,34 @@ class AudioEngine {
   toggleMute() {
     this.muted = !this.muted;
     localStorage.setItem('faufar_muted', this.muted.toString());
+    
     if (!this.muted) {
       this.init(); // initialize/resume if unmuted
+      if (this.isBgmPlaying && this.bgmAudio) {
+        this.bgmAudio.play().catch(() => {});
+      }
+    } else {
+      if (this.bgmAudio) {
+        this.bgmAudio.pause();
+      }
+    }
+  }
+
+  // New Methods for BGM
+  playBGM() {
+    this.isBgmPlaying = true;
+    if (!this.muted && this.bgmAudio) {
+      this.bgmAudio.play().catch(() => {
+        // Autoplay policy might block this until user interacts
+      });
+    }
+  }
+
+  stopBGM() {
+    this.isBgmPlaying = false;
+    if (this.bgmAudio) {
+      this.bgmAudio.pause();
+      this.bgmAudio.currentTime = 0;
     }
   }
 

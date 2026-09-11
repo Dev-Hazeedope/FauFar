@@ -34,7 +34,7 @@ export function HowToPlayModal({ isOpen, onClose, title, instructions }: Props) 
           </button>
         </header>
         <div className="p-6">
-          <h3 className="font-fredoka text-2xl font-black text-slate-900 mb-4">{title}</h3>
+          <h3 className="font-outfit text-2xl font-black text-slate-900 mb-4">{title}</h3>
           <ul className="space-y-4">
             {instructions.map((instruction, index) => (
               <li key={index} className="flex items-start gap-3 text-slate-700 font-bold text-lg">

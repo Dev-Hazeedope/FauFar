@@ -30,10 +30,10 @@ function attemptLayout(
   scaleMax: number,
   pad: number,
   maxAttempts: number,
-  minSize: number = 44
+  minSize: number = 44,
+  safeMargin: number = 16
 ): PlacedNumber[] | null {
   const items: PlacedNumber[] = [];
-  const safeMargin = 2;
   const colors = ['#FF5757', '#5CE1E6', '#9ddb4e', '#0f172a', '#e8c946', '#FF914D'];
 
   for (let i = start; i <= end; i++) {
@@ -81,19 +81,25 @@ function gridFallback(
   start: number,
   end: number,
   containerWidth: number,
-  containerHeight: number
+  containerHeight: number,
+  margin: number = 16
 ): PlacedNumber[] | null {
   const items: PlacedNumber[] = [];
   const count = end - start + 1;
   const colors = ['#FF5757', '#5CE1E6', '#9ddb4e', '#0f172a', '#e8c946', '#FF914D'];
   
+  const w = containerWidth - margin * 2;
+  const h = containerHeight - margin * 2;
+  if (w <= 0 || h <= 0) return null;
+
+  
   // Calculate grid dimensions
-  const aspect = containerWidth / containerHeight;
+  const aspect = w / h;
   const cols = Math.ceil(Math.sqrt(count * aspect));
   const rows = Math.ceil(count / cols);
   
-  const cellW = containerWidth / cols;
-  const cellH = containerHeight / rows;
+  const cellW = w / cols;
+  const cellH = h / rows;
   
   // Need at least 20px cell size to be vaguely readable
   if (cellW < 20 || cellH < 20) return null;
@@ -121,8 +127,8 @@ function gridFallback(
     const maxJitterX = Math.max(0, cellW - width);
     const maxJitterY = Math.max(0, cellH - height);
     
-    const x = pos.c * cellW + Math.random() * maxJitterX;
-    const y = pos.r * cellH + Math.random() * maxJitterY;
+    const x = margin + pos.c * cellW + Math.random() * maxJitterX;
+    const y = margin + pos.r * cellH + Math.random() * maxJitterY;
     const rotation = randomInt(-20, 20);
 
     items.push({ value: i, x, y, rotation, width, height, fontSize, colorClass });
@@ -138,19 +144,19 @@ export function generateLayout(
   containerHeight: number
 ): PlacedNumber[] | null {
   // Pass 1: High difficulty, varied scales, generous padding
-  let layout = attemptLayout(start, end, containerWidth, containerHeight, 0.7, 1.6, 6, 2000, 44);
+  let layout = attemptLayout(start, end, containerWidth, containerHeight, 0.7, 1.6, 6, 2000, 44, 20);
   if (layout) return layout;
 
   // Pass 2: Medium difficulty, tighter packing
-  layout = attemptLayout(start, end, containerWidth, containerHeight, 0.6, 1.0, 2, 3000, 44);
+  layout = attemptLayout(start, end, containerWidth, containerHeight, 0.6, 1.0, 2, 3000, 44, 16);
   if (layout) return layout;
 
   // Pass 3: Low difficulty (minimum scales to fit the 44px touch target), zero padding
-  layout = attemptLayout(start, end, containerWidth, containerHeight, 0.5, 0.6, 0, 5000, 44);
+  layout = attemptLayout(start, end, containerWidth, containerHeight, 0.5, 0.6, 0, 5000, 44, 12);
   if (layout) return layout;
 
   // Pass 4: Ultra dense mode. Shrinks the minimum target size slightly (violates 44px, but needed for 200 on mobile)
-  layout = attemptLayout(start, end, containerWidth, containerHeight, 0.45, 0.5, -2, 8000, 32);
+  layout = attemptLayout(start, end, containerWidth, containerHeight, 0.45, 0.5, -2, 8000, 32, 10);
   if (layout) return layout;
 
   // Pass 5: Bounded packing grid fallback (allows extremely dense layouts)

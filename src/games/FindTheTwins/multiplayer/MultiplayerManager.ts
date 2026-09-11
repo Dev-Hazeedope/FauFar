@@ -96,7 +96,7 @@ export const joinRoom = async (roomId: string, name: string, avatar: string): Pr
     if (room.state !== 'waiting') throw new Error("Game already started");
     
     const playerCount = Object.keys(room.players).length;
-    if (playerCount >= 2 && !room.players[clientId]) {
+    if (playerCount >= 50 && !room.players[clientId]) {
       throw new Error("Room is full");
     }
 

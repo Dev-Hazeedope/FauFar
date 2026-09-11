@@ -16,6 +16,22 @@ export default function App() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(audio.muted);
   
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      audio.playBGM();
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+    
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+    
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, []);
+  
   const toggleMute = () => {
     audio.toggleMute();
     setIsMuted(audio.muted);
@@ -51,8 +67,8 @@ export default function App() {
           >
             <header className="flex items-center justify-between mb-12 mt-8 bg-white border-4 border-slate-900 rounded-[2rem] p-4 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]">
               <div className="flex items-center gap-4 pl-2 md:pl-4">
-                <div className="bg-[#FF5757] p-3 border-4 border-slate-900 rounded-2xl shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] -rotate-6">
-                  <Dices className="w-8 h-8 text-white" />
+                <div className="bg-white p-3 border-4 border-slate-900 rounded-2xl shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] -rotate-6">
+                  <Dices className="w-8 h-8 text-slate-900" />
                 </div>
                 <h1 className="game-title text-slate-900" style={{ WebkitTextStroke: '0px', textShadow: 'none', color: '#0f172a' }}>
                   FauFar Games
@@ -105,7 +121,7 @@ export default function App() {
                     </div>
                     <div className="p-6 bg-white flex-1 flex flex-col justify-between">
                       <div>
-                        <h3 className="font-fredoka font-bold text-2xl text-slate-900 mb-2">
+                        <h3 className="font-outfit font-bold text-2xl text-slate-900 mb-2">
                           {game.title}
                         </h3>
                         <p className="text-slate-700 font-bold leading-snug">

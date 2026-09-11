@@ -1,6 +1,6 @@
 import { TimerSetup } from '../../components/TimerSetup';
 import { TimerDisplay } from '../../components/TimerDisplay';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Illustration } from '../../components/Illustration';
 import { Home, RefreshCw, Users, User, Link, Info } from 'lucide-react';
 import { SHARED_ICONS } from '../../lib/icons';
@@ -21,6 +21,15 @@ interface Card {
 }
 
 export function MemoryPairs({ onExit }: { onExit: () => void }) {
+  useEffect(() => {
+    // Start BGM when entering the game
+    audio.playBGM();
+    return () => {
+      // Stop BGM when leaving the game
+      audio.stopBGM();
+    };
+  }, []);
+
   const [selectMode, setSelectMode] = useState<'SELECT' | 'LOCAL' | 'MULTI'>('SELECT');
   const [state, setState] = useState<'setup' | 'playing' | 'completed'>('setup');
   const [showHowToPlay, setShowHowToPlay] = useState(false);
@@ -119,54 +128,55 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
 
   if (selectMode === 'SELECT') {
     return (
-      <div className="game-screen relative">
+      <div className="game-screen items-center justify-center relative">
         <HowToPlayModal 
           isOpen={showHowToPlay}
           onClose={() => setShowHowToPlay(false)}
           title="Memory Pairs"
           instructions={[
-            "Tap cards to flip them over and reveal their icons.",
-            "Try to find matching pairs of icons.",
-            "In local multiplayer, take turns flipping cards.",
-            "In online multiplayer, race to find pairs as quickly as you can before time runs out!"
+            "Flip cards over to find matching pairs.",
+            "Remember their positions!",
+            "Match all pairs to win the game."
           ]}
         />
-        <header className="flex items-center gap-4 mb-8 justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={onExit} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer">
-              <Home className="w-6 h-6" />
-            </button>
-            <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none">Memory Pairs</h1>
+        <div className="w-full max-w-md game-panel">
+          <div className="flex justify-between items-start mb-6">
+            <Illustration emoji="🧠" shape="square" color="#C1FF72" className="scale-[0.5] -ml-6 -mt-6" />
+            <div className="flex gap-2">
+              <button onClick={() => setShowHowToPlay(true)} className="game-avatar text-white !bg-[#5CE1E6] hover:!bg-[#4bd8dd] cursor-pointer transition-transform active:scale-95">
+                <Info className="w-6 h-6" />
+              </button>
+              <button onClick={onExit} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer transition-transform active:scale-95">
+                <Home className="w-6 h-6" />
+              </button>
+            </div>
           </div>
-          <button onClick={() => setShowHowToPlay(true)} className="game-avatar text-white !bg-[#5CE1E6] hover:!bg-[#4bd8dd] cursor-pointer">
-            <Info className="w-6 h-6" />
-          </button>
-        </header>
+          
+          <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none mb-2">Memory Pairs</h1>
+          <p className="text-slate-500 font-medium mb-8 text-center leading-relaxed">Test your memory by matching pairs of cards.</p>
 
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
-          <button
-            onClick={() => setSelectMode('LOCAL')}
-            className="game-card bg-[#5CE1E6] p-8 flex flex-col items-center gap-4 w-full cursor-pointer"
-          >
-            <Illustration emoji="🎮" shape="square" color="#ffffff" className="scale-75" />
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-1">Local Play</h2>
-              <p className="text-slate-800">Play solo or pass & play</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setSelectMode('MULTI')}
-            className="game-card bg-[#C1FF72] p-8 flex flex-col items-center gap-4 w-full cursor-pointer"
-          >
-            <div className="w-16 h-16 bg-white shadow-[2px_2px_0_0_#0f172a] border-4 border-slate-900 rounded-2xl flex items-center justify-center">
-              <Link className="w-8 h-8" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-1">Online Multiplayer</h2>
-              <p className="text-slate-800">Play with a friend remotely</p>
-            </div>
-          </button>
+          <div className="space-y-4">
+            <button 
+              onClick={() => setSelectMode('LOCAL')}
+              className="w-full p-4 sm:p-6 game-card bg-white p-4 sm:p-6 flex items-center gap-4 sm:gap-6 w-full cursor-pointer group"
+            >
+              <Illustration emoji="🎮" shape="square" color="#5CE1E6" className="scale-[0.6] -ml-4" />
+              <div className="text-left">
+                <div className="font-black text-lg text-slate-800 group-hover:text-indigo-900">Local Play</div>
+                <div className="text-sm text-slate-500 font-medium mt-1">Play solo or pass & play</div>
+              </div>
+            </button>
+            <button 
+              onClick={() => { setSelectMode('MULTI');  }}
+              className="w-full p-4 sm:p-6 game-card bg-white p-4 sm:p-6 flex items-center gap-4 sm:gap-6 w-full cursor-pointer group"
+            >
+              <Illustration emoji="🌍" shape="blob" color="#C1FF72" className="scale-[0.6] -ml-4" />
+              <div className="text-left">
+                <div className="font-black text-lg text-slate-800 group-hover:text-indigo-900">Online Multiplayer</div>
+                <div className="text-sm text-slate-500 font-medium mt-1">Race against a friend online</div>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     );
