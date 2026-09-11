@@ -17,6 +17,7 @@ export interface Room {
     timeLimit: number; // in seconds
   };
   state: 'waiting' | 'playing' | 'completed';
+  hostLeft?: boolean;
   currentNumber: number | null;
   targetGeneratedAt: number | null;
   endTime: number | null;

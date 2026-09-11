@@ -1,13 +1,9 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { LogOut, Users, Play, Trophy, Copy, Check } from 'lucide-react';
-import { Board } from '../Board';
-import { PlacedNumber } from '../types';
-import { generateLayout } from '../layout';
+import React, { useEffect, useState, useRef } from 'react';
+import { LogOut, Users, Play, Trophy, Copy, Check, ArrowUp, ArrowDown } from 'lucide-react';
 import { audio } from '../../../lib/audio';
 import { haptics } from '../../../lib/haptics';
-import { TimerDisplay } from '../../../components/TimerDisplay';
 import { EmojiReactions } from '../../../components/EmojiReactions';
-import { subscribeToRoom, startGame, leaveRoom, foundNumber, endGame, clientId } from './MultiplayerManager';
+import { subscribeToRoom, startGame, leaveRoom, submitGuess, clientId } from './MultiplayerManager';
 
 interface Props {
   room: any;
@@ -17,31 +13,28 @@ interface Props {
 }
 
 export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated }: Props) {
-  const [layout, setLayout] = useState<PlacedNumber[] | null>(null);
-  const boardContainerRef = React.useRef<HTMLDivElement>(null);
-  const [winnerAlert, setWinnerAlert] = useState<{name: string, points: number} | null>(null);
   const [copied, setCopied] = useState(false);
-  
-  const initialTimeLeft = room.endTime ? Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)) : 0;
-  const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
+  const [currentGuess, setCurrentGuess] = useState('');
   
   const isHost = clientId === room.hostId;
   const isPlaying = room.state === 'playing';
 
-  const callbacksRef = React.useRef({ onLeave, onGameEnded, onRoomUpdated });
+  const callbacksRef = useRef({ onLeave, onGameEnded, onRoomUpdated });
   useEffect(() => {
     callbacksRef.current = { onLeave, onGameEnded, onRoomUpdated };
   });
 
-  const prevRoomRef = React.useRef(room);
+  const prevRoomRef = useRef(room);
 
   useEffect(() => {
     const unsubscribe = subscribeToRoom(room.id, (updatedRoom) => {
       const { onLeave, onGameEnded, onRoomUpdated } = callbacksRef.current;
+      
       if (!updatedRoom) {
         onLeave();
         return;
       }
+
       if (updatedRoom.hostLeft) {
         alert("The host has left the game.");
         onLeave();
@@ -62,17 +55,18 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
         audio.playStart();
       }
 
+      // Detect new guess
+      if (prevRoom.guesses.length < updatedRoom.guesses.length) {
+        const latestGuess = updatedRoom.guesses[0];
+        if (latestGuess.playerId !== clientId) {
+          audio.playTap();
+        }
+      }
+
       // Detect game end
       if (prevRoom.state === 'playing' && updatedRoom.state === 'completed') {
         audio.playComplete();
         onGameEnded(updatedRoom);
-      }
-
-      // Detect number found
-      if (updatedRoom.lastWinner && updatedRoom.lastWinner.timestamp > (prevRoom.lastWinner?.timestamp || 0)) {
-        setWinnerAlert({ name: updatedRoom.lastWinner.name, points: updatedRoom.lastWinner.points });
-        audio.playFound();
-        setTimeout(() => setWinnerAlert(null), 2000);
       }
 
       prevRoomRef.current = updatedRoom;
@@ -80,32 +74,6 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
 
     return () => unsubscribe();
   }, [room.id]);
-
-  useEffect(() => {
-    if (room.endTime) {
-      setTimeLeft(Math.max(0, Math.floor((room.endTime - Date.now()) / 1000)));
-    }
-  }, [room.endTime]);
-
-  useEffect(() => {
-    if (!isPlaying || !boardContainerRef.current) return;
-    
-    let currentLayoutGenerated = false;
-    
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      const { width: w, height: h } = entry.contentRect;
-      
-      if (w > 100 && h > 100 && !currentLayoutGenerated) {
-        setLayout(generateLayout(room.config.start, room.config.end, w, h));
-        currentLayoutGenerated = true;
-      }
-    });
-    
-    observer.observe(boardContainerRef.current);
-    return () => observer.disconnect();
-  }, [isPlaying, room.config.start, room.config.end]);
 
   const handleStartGame = () => {
     startGame(room.id);
@@ -116,20 +84,20 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
     onLeave();
   };
 
-  const handleNumberClick = (num: number) => {
-    if (num === room.currentNumber) {
-      foundNumber(room.id, num);
-      haptics.vibrateSuccess();
-    } else {
-      audio.playWrong();
-      haptics.vibrateError();
-    }
-  };
-
   const handleCopyCode = () => {
     navigator.clipboard.writeText(room.id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleGuessSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseInt(currentGuess);
+    if (!isNaN(val)) {
+      submitGuess(room.id, val);
+      setCurrentGuess('');
+      haptics.vibrateSuccess();
+    }
   };
 
   if (!isPlaying) {
@@ -207,55 +175,49 @@ export function MultiplayerGameplay({ room, onLeave, onGameEnded, onRoomUpdated 
     <div className="game-screen relative">
       <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur border-b border-slate-200 z-10 shrink-0">
         <div className="flex items-center gap-4">
+          <button onClick={handleLeave} className="p-2 text-slate-400 hover:text-red-500 bg-slate-100 rounded-full">
+            <LogOut className="w-5 h-5" />
+          </button>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Find</span>
-            <span className="text-3xl font-black text-indigo-600 leading-none">{room.currentNumber}</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Secret Number Range</span>
+            <span className="text-xl font-black text-indigo-600 leading-none">{room.config.min} - {room.config.max}</span>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Your Score</span>
-            <span className="text-xl font-black text-slate-700 leading-none">{room.players[clientId]?.score || 0}</span>
-          </div>
-          
-          <TimerDisplay 
-            timedMode={true}
-            timeLeft={timeLeft}
-            setTimeLeft={setTimeLeft}
-            isActive={true}
-            onTimeUp={() => {
-              if (isHost) {
-                endGame(room.id);
-              }
-            }} 
-          />
         </div>
       </header>
 
-      <div ref={boardContainerRef} className="flex-1 relative overflow-hidden bg-transparent p-2 flex flex-col">
-        {layout && (
-          <Board
-            layout={layout}
-            found={new Set()}
-            currentTarget={room.currentNumber}
-            onTap={handleNumberClick}
-          />
-        )}
-        
-        {winnerAlert && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-            <div className="bg-slate-900/90 text-white px-8 py-6 rounded-3xl animate-in zoom-in slide-in-from-bottom-8 flex flex-col items-center gap-2 shadow-2xl">
-              <Trophy className="w-12 h-12 text-yellow-400 mb-2" />
-              <div className="text-xl font-medium text-slate-300">Found by</div>
-              <div className="text-3xl font-black">{winnerAlert.name}</div>
-              <div className="text-yellow-400 font-bold mt-2">+{winnerAlert.points} points</div>
+      <main className="flex-1 p-6 flex flex-col items-center max-w-xl mx-auto w-full relative">
+        <div className="w-full game-panel text-center mb-6 z-10 relative">
+          <form onSubmit={handleGuessSubmit} className="flex gap-2">
+            <input
+              type="number"
+              value={currentGuess}
+              onChange={e => setCurrentGuess(e.target.value)}
+              placeholder="Enter guess..."
+              className="flex-1 p-4 rounded-xl border border-slate-200 bg-slate-50 text-xl font-bold focus:ring-2 focus:ring-indigo-500 text-center"
+            />
+            <button type="submit" disabled={!currentGuess} className="px-6 bg-indigo-600 text-white font-bold rounded-xl disabled:opacity-50">Guess</button>
+          </form>
+        </div>
+
+        <div className="w-full space-y-3 flex-1 overflow-y-auto pb-20">
+          {room.guesses.map((g: any, i: number) => (
+            <div key={i} className={`flex items-center justify-between p-4 rounded-xl border shadow-sm ${g.playerId === clientId ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-slate-200'}`}>
+              <div className="flex flex-col w-24">
+                <span className="text-xl font-bold text-slate-700">{g.value}</span>
+                <span className="text-xs text-slate-400 font-bold truncate">{g.playerName}</span>
+              </div>
+              
+              <div className="flex-1 text-center">
+                {g.result === 'low' && <span className="flex items-center justify-center gap-2 font-bold text-blue-600"><ArrowUp className="w-5 h-5" /> Higher</span>}
+                {g.result === 'high' && <span className="flex items-center justify-center gap-2 font-bold text-amber-600"><ArrowDown className="w-5 h-5" /> Lower</span>}
+                {g.result === 'correct' && <span className="flex items-center justify-center gap-2 font-bold text-green-600"><Check className="w-5 h-5" /> Correct</span>}
+              </div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
         
-        <EmojiReactions roomId={room.id} collectionName="rooms" myPlayerId={clientId} lastReaction={(room as any).lastReaction} />
-      </div>
+        <EmojiReactions roomId={room.id} collectionName="sn_rooms" myPlayerId={clientId} lastReaction={(room as any).lastReaction} />
+      </main>
     </div>
   );
 }

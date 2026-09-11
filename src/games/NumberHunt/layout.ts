@@ -34,7 +34,7 @@ function attemptLayout(
 ): PlacedNumber[] | null {
   const items: PlacedNumber[] = [];
   const safeMargin = 2;
-  const colors = ['text-slate-800', 'text-slate-900', 'text-slate-700', 'text-slate-600', 'text-gray-800', 'text-zinc-800'];
+  const colors = ['#FF5757', '#5CE1E6', '#9ddb4e', '#0f172a', '#e8c946', '#FF914D'];
 
   for (let i = start; i <= end; i++) {
     const scale = scaleMin + Math.random() * (scaleMax - scaleMin);
@@ -85,7 +85,7 @@ function gridFallback(
 ): PlacedNumber[] | null {
   const items: PlacedNumber[] = [];
   const count = end - start + 1;
-  const colors = ['text-slate-800', 'text-slate-900', 'text-slate-700', 'text-slate-600', 'text-gray-800', 'text-zinc-800'];
+  const colors = ['#FF5757', '#5CE1E6', '#9ddb4e', '#0f172a', '#e8c946', '#FF914D'];
   
   // Calculate grid dimensions
   const aspect = containerWidth / containerHeight;

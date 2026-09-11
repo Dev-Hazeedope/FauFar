@@ -23,6 +23,7 @@ export interface MPRoom {
     pairsCount: 6 | 8 | 12;
   };
   state: 'waiting' | 'playing' | 'completed';
+  hostLeft?: boolean;
   
   // Game State
   cards: Card[];
@@ -65,10 +66,8 @@ export const createRoom = async (name: string, avatar: string, config: { timeLim
     config,
     state: 'waiting',
     cards: [],
-    revealedIds: [],
     matchedIds: [],
     scores: { 1: 0, 2: 0 },
-    turn: 1,
     endTime: null,
     winner: null,
     isDraw: false,

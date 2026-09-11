@@ -82,38 +82,38 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
 
   if (setupMode === 'SELECT') {
     return (
-      <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset">
+      <div className="game-screen">
         <header className="flex items-center gap-4 mb-8">
-          <button onClick={onBack} className="p-3 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
+          <button onClick={onBack} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer">
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-3xl font-black text-slate-900">Multiplayer</h1>
+          <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none">Multiplayer</h1>
         </header>
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
           <button
             onClick={() => setSetupMode('HOST')}
-            className="w-full p-6 bg-indigo-600 text-white rounded-3xl flex items-center gap-6 active:scale-95 transition-transform"
+            className="game-card bg-[#5CE1E6] p-8 flex items-center gap-6 w-full cursor-pointer"
           >
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+            <div className="w-16 h-16 bg-white shadow-[2px_2px_0_0_#0f172a] border-4 border-slate-900 rounded-2xl flex items-center justify-center shrink-0">
               <Users className="w-8 h-8" />
             </div>
             <div className="text-left">
               <h2 className="text-2xl font-bold mb-1">Host Game</h2>
-              <p className="text-indigo-100 text-sm">Create a room and invite friends</p>
+              <p className="text-slate-800 text-sm">Create a room and invite friends</p>
             </div>
           </button>
 
           <button
             onClick={() => setSetupMode('JOIN')}
-            className="w-full p-6 bg-emerald-500 text-white rounded-3xl flex items-center gap-6 active:scale-95 transition-transform"
+            className="game-card bg-[#C1FF72] p-8 flex items-center gap-6 w-full cursor-pointer"
           >
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+            <div className="w-16 h-16 bg-white shadow-[2px_2px_0_0_#0f172a] border-4 border-slate-900 rounded-2xl flex items-center justify-center shrink-0">
               <Play className="w-8 h-8" />
             </div>
             <div className="text-left">
               <h2 className="text-2xl font-bold mb-1">Join Game</h2>
-              <p className="text-emerald-100 text-sm">Enter a code to join</p>
+              <p className="text-slate-800 text-sm">Enter a code to join</p>
             </div>
           </button>
         </div>
@@ -122,19 +122,19 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
   }
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset">
+    <div className="game-screen">
       <header className="flex items-center gap-4 mb-8">
-        <button onClick={() => { setSetupMode('SELECT'); setError(''); }} className="p-3 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
+        <button onClick={() => { setSetupMode('SELECT'); setError(''); }} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-3xl font-black text-slate-900">
+        <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none">
           {setupMode === 'HOST' ? 'Host Game' : 'Join Game'}
         </h1>
       </header>
 
       <div className="flex-1 max-w-md mx-auto w-full flex flex-col gap-6">
         {error && (
-          <div className="p-4 bg-red-50 text-red-600 rounded-xl font-medium border border-red-100">
+          <div className="p-4 bg-[#FF5757] text-white border-4 border-slate-900 font-bold rounded-2xl shadow-[4px_4px_0_0_#0f172a]">
             {error}
           </div>
         )}
@@ -146,7 +146,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
             value={playerName}
             onChange={e => setPlayerName(e.target.value)}
             placeholder="e.g. Alex"
-            className="w-full p-4 rounded-xl border border-slate-200 bg-white font-bold text-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full game-input"
             maxLength={15}
           />
         </div>
@@ -158,7 +158,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
               <button
                 key={a}
                 onClick={() => setAvatar(a)}
-                className={`w-12 h-12 text-2xl flex items-center justify-center rounded-xl border-2 transition-all ${avatar === a ? 'border-indigo-500 bg-indigo-50 scale-110' : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50'}`}
+                className={`w-12 h-12 text-2xl flex items-center justify-center rounded-2xl border-4 transition-all shadow-[2px_2px_0_0_#0f172a] ${avatar === a ? 'border-slate-900 bg-[#FFDE59] scale-110' : 'border-slate-900 bg-white hover:bg-slate-100 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#0f172a]'}`}
               >
                 {a}
               </button>
@@ -174,7 +174,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
               value={roomCode}
               onChange={e => setRoomCode(e.target.value.toUpperCase())}
               placeholder="e.g. A1B2C3"
-              className="w-full p-4 rounded-xl border border-slate-200 bg-white font-bold text-lg focus:ring-2 focus:ring-indigo-500 outline-none uppercase tracking-widest"
+              className="w-full game-input uppercase tracking-widest"
               maxLength={6}
             />
           </div>
@@ -182,7 +182,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
 
         {setupMode === 'HOST' && (
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-200">
+            <div className="game-panel">
               <h2 className="font-bold text-slate-800 mb-4">Number Range</h2>
               <div className="flex gap-4">
                 <div className="flex-1">
@@ -191,7 +191,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
                     type="number"
                     value={startNum}
                     onChange={(e) => setStartNum(parseInt(e.target.value) || 1)}
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full game-input text-base"
                   />
                 </div>
                 <div className="flex-1">
@@ -200,20 +200,20 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
                     type="number"
                     value={endNum}
                     onChange={(e) => setEndNum(parseInt(e.target.value) || 100)}
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full game-input text-base"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-200">
+            <div className="game-panel">
               <h2 className="font-bold text-slate-800 mb-4">Time Limit (Minutes)</h2>
               <div>
                 <input
                   type="number"
                   value={timeLimit}
                   onChange={(e) => setTimeLimit(parseInt(e.target.value) || 1)}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full game-input"
                   min="1"
                   max="10"
                 />
@@ -226,7 +226,7 @@ export function MultiplayerSetup({ onBack, onJoinRoom }: Props) {
           <button
             onClick={setupMode === 'HOST' ? handleHost : handleJoin}
             disabled={isConnecting}
-            className="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+            className="w-full py-4 text-xl game-button-primary disabled:opacity-50"
           >
             {isConnecting ? 'Connecting...' : (setupMode === 'HOST' ? 'Create Room' : 'Join Room')}
           </button>

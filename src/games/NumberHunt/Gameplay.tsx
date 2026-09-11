@@ -49,25 +49,27 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
 
   useEffect(() => {
     if (!boardContainerRef.current) return;
-    const w = boardContainerRef.current.clientWidth;
-    const h = boardContainerRef.current.clientHeight;
-    baseSize.current = { w, h };
-    initBoard(w, h);
     
-    // Handle resize indicating board doesn't fit anymore
-    const handleResize = () => {
-      if (!boardContainerRef.current || !baseSize.current) return;
-      const currentW = boardContainerRef.current.clientWidth;
-      const currentH = boardContainerRef.current.clientHeight;
+    let initialized = false;
+    
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width: w, height: h } = entry.contentRect;
       
-      // If window got significantly smaller, the absolute positioned items might be cut off
-      if (currentW < baseSize.current.w - 20 || currentH < baseSize.current.h - 20) {
-        setResizeError(true);
+      if (w > 100 && h > 100) {
+        if (!initialized) {
+          baseSize.current = { w, h };
+          initBoard(w, h);
+          initialized = true;
+        } else if (baseSize.current && (w < baseSize.current.w - 20 || h < baseSize.current.h - 20)) {
+          setResizeError(true);
+        }
       }
-    };
+    });
     
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    observer.observe(boardContainerRef.current);
+    return () => observer.disconnect();
   }, [initBoard]);
 
   useEffect(() => {
@@ -128,11 +130,11 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
   const currentTarget = targets[currentIndex] ?? null;
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-[#fdfbf7] text-slate-800 safe-area-inset">
+    <div className="game-screen relative">
       {/* Header */}
-      <header className="flex-none p-4 flex items-center justify-between border-b border-slate-200 bg-white shadow-sm z-10">
+      <header className="flex-none p-4 flex items-center justify-between bg-white border-b-4 border-slate-900 z-10">
         <div className="flex items-center gap-2">
-          <button onClick={onHome} className="p-2 -ml-2 text-slate-500 hover:text-slate-900 rounded-full hover:bg-slate-100" aria-label="Home">
+          <button onClick={onHome} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer" aria-label="Home">
             <Home className="w-5 h-5" />
           </button>
           <div className="flex flex-col">
@@ -142,28 +144,28 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
         </div>
         
         {config.timedMode && layout && !layoutError && !resizeError && (
-          <div className={`flex items-center gap-1 font-mono font-bold px-3 py-1.5 rounded-lg shadow-sm ${timeLeft <= 10 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-700'}`}>
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-xl border-4 border-slate-900 shadow-[4px_4px_0_0_#0f172a] ${timeLeft <= 10 ? 'bg-[#FF5757] text-white animate-pulse' : 'bg-white text-slate-900'}`}>
              <TimerIcon className="w-4 h-4" />
              {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
           </div>
         )}
         
         <div 
-          className="text-2xl font-black text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full shadow-sm"
+          className="font-fredoka text-3xl font-black text-slate-900 bg-[#5CE1E6] px-6 py-2 rounded-2xl border-4 border-slate-900 shadow-[4px_4px_0_0_#0f172a]"
           aria-live="polite"
         >
           {currentTarget !== null ? `Find: ${currentTarget}` : 'Done!'}
         </div>
 
         <div className="flex items-center gap-1">
-          <button onClick={toggleMute} className="p-2 text-slate-500 hover:text-indigo-600 rounded-full hover:bg-slate-100" aria-label="Toggle Sound">
+          <button onClick={toggleMute} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer" aria-label="Toggle Sound">
             {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
           </button>
         </div>
       </header>
 
       {/* Main Board Area */}
-      <main className="flex-1 relative p-2 md:p-4 overflow-hidden" ref={boardContainerRef}>
+      <main className="flex-1 relative p-2 md:p-4 overflow-hidden flex flex-col" ref={boardContainerRef}>
         {!layout && !layoutError && (
           <div className="absolute inset-0 flex items-center justify-center text-slate-400">
             Preparing board...
@@ -181,49 +183,47 @@ export function Gameplay({ config, onComplete, onChangeRange, onHome }: Props) {
 
         {/* Error Overlays */}
         {layoutError && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm p-6 text-center">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Too many numbers!</h2>
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+            <div className="game-panel max-w-md"><h2 className="game-title-sm !text-slate-900 !stroke-none !shadow-none mb-2">Too many numbers!</h2>
             <p className="text-slate-600 mb-6 max-w-sm">
               The range {config.start}–{config.end} is too large to fit safely on this screen.
             </p>
             <div className="flex gap-4">
-              <button onClick={onChangeRange} className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-sm">
+              <button onClick={onChangeRange} className="px-6 py-3 game-button-primary text-xl">
                 Change Range
               </button>
             </div>
-          </div>
+          </div></div>
         )}
 
         {resizeError && !layoutError && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm p-6 text-center">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Screen resized</h2>
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm p-6 text-center">
+            <div className="game-panel max-w-md"><h2 className="game-title-sm !text-slate-900 !stroke-none !shadow-none mb-2">Screen resized</h2>
             <p className="text-slate-600 mb-6 max-w-sm">
               The board no longer fits safely on your screen. You can restart to generate a new board for this size.
             </p>
-            <button onClick={handleRestart} className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-sm">
+            <button onClick={handleRestart} className="px-6 py-3 game-button-primary text-xl">
               Restart & Shuffle
             </button>
-          </div>
+          </div></div>
         )}
       </main>
 
       {/* Footer Controls */}
-      <footer className="flex-none p-4 pb-6 flex items-center justify-center gap-4 border-t border-slate-200 bg-white z-10">
+      <footer className="flex-none p-4 pb-6 flex items-center justify-center gap-4 bg-white border-t-4 border-slate-900 z-10">
                 
         <button 
           onClick={handleRestart}
-          className="flex flex-col items-center gap-1 p-2 min-w-[80px] text-slate-600 hover:text-indigo-600 active:scale-95 transition-all"
+          className="game-button game-button-secondary px-4 py-2"
         >
-          <RefreshCw className="w-6 h-6" />
-          <span className="text-xs font-semibold">Restart</span>
+          <RefreshCw className="w-5 h-5" /> Restart
         </button>
 
         <button 
           onClick={onChangeRange}
-          className="flex flex-col items-center gap-1 p-2 min-w-[80px] text-slate-600 hover:text-indigo-600 active:scale-95 transition-all"
+          className="game-button game-button-secondary px-4 py-2"
         >
-          <Settings2 className="w-6 h-6" />
-          <span className="text-xs font-semibold">Range</span>
+          <Settings2 className="w-5 h-5" /> Range
         </button>
       </footer>
     </div>

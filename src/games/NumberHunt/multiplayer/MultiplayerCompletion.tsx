@@ -23,6 +23,11 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
         onLeave();
         return;
       }
+      if (updatedRoom.hostLeft) {
+        alert("The host has left the game.");
+        onLeave();
+        return;
+      }
       onRoomUpdated(updatedRoom);
     });
     return () => unsubscribe();
@@ -41,7 +46,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
   const winner = players[0] as any;
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset">
+    <div className="game-screen">
       <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-8">
         
         <div className="text-center flex flex-col items-center">
@@ -49,11 +54,11 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
             {winner?.avatar || <Trophy className="w-12 h-12 text-yellow-500" />}
           </div>
           <h2 className="text-xl font-bold text-slate-500 mb-2">Winner</h2>
-          <h1 className="text-4xl font-black text-slate-900">{winner?.name || 'Nobody'}</h1>
+          <h1 className="game-title text-center mb-6 !text-slate-900 !stroke-none !shadow-none">{winner?.name || 'Nobody'}</h1>
           <p className="text-indigo-600 font-bold mt-2 text-xl">{winner?.score || 0} pts</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+        <div className="game-panel">
           <h3 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm">Leaderboard</h3>
           <div className="space-y-3">
             {players.map((p: any, idx: number) => (
@@ -72,7 +77,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
         <div className="flex gap-4">
           <button
             onClick={handleLeave}
-            className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-200"
+            className="flex-1 py-4 game-button-secondary"
           >
             <LogOut className="w-5 h-5" /> Leave Room
           </button>
@@ -80,7 +85,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
           {isHost && (
             <button
               onClick={handleRestart}
-              className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              className="flex-1 py-4 game-button-primary py-4"
             >
               <RotateCcw className="w-5 h-5" /> Play Again
             </button>

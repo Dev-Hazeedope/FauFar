@@ -23,6 +23,11 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
         onLeave();
         return;
       }
+      if (updatedRoom.hostLeft) {
+        alert("The host has left the game.");
+        onLeave();
+        return;
+      }
       onRoomUpdated(updatedRoom);
     });
     return () => unsubscribe();
@@ -40,7 +45,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
   const winnerPlayer = room.winner ? room.players[room.winner] : null;
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset">
+    <div className="game-screen">
       <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-8">
         
         <div className="text-center flex flex-col items-center">
@@ -50,7 +55,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
           <h2 className="text-xl font-bold text-slate-500 mb-2">
             {room.isDraw ? 'Result' : 'Winner'}
           </h2>
-          <h1 className="text-4xl font-black text-slate-900">
+          <h1 className="game-title text-center mb-6 !text-slate-900 !stroke-none !shadow-none">
             {room.isDraw ? 'It\'s a Draw!' : (winnerPlayer?.name || 'Nobody')}
           </h1>
           {!room.isDraw && winnerPlayer && (
@@ -58,10 +63,10 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
           )}
         </div>
 
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+        <div className="game-panel">
           <h3 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm">Players</h3>
           <div className="space-y-3">
-            {Object.values(room.players).sort((a: any, b: any) => (room.scores ? room.scores[b.number] - room.scores[a.number] : (room.guesses ? room.guesses[a.number] - room.guesses[b.number] : 0))).map((p: any) => (
+            {Object.values(room.players).sort((a: any, b: any) => room.guesses[a.number] - room.guesses[b.number]).map((p: any) => (
               <div key={p.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{p.avatar}</span>
@@ -83,7 +88,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
         <div className="flex gap-4">
           <button
             onClick={handleLeave}
-            className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-200"
+            className="flex-1 py-4 game-button-secondary"
           >
             <LogOut className="w-5 h-5" /> Leave Room
           </button>
@@ -91,7 +96,7 @@ export function MultiplayerCompletion({ room, onLeave, onRoomUpdated }: Props) {
           {isHost && (
             <button
               onClick={handleRestart}
-              className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              className="flex-1 py-4 game-button-primary py-4"
             >
               <RotateCcw className="w-5 h-5" /> Play Again
             </button>

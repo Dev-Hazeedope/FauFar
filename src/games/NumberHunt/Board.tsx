@@ -12,7 +12,7 @@ interface Props {
 
 export function Board({ layout, found, currentTarget, onTap }: Props) {
   return (
-    <div className="relative w-full h-full touch-none select-none overflow-hidden rounded-xl bg-[#fffcf7] shadow-inner border border-slate-200">
+    <div className="relative flex-1 w-full h-full touch-none select-none overflow-hidden bg-white border-4 border-slate-900 rounded-2xl shadow-[inset_4px_4px_0_0_rgba(15,23,42,0.1)] bg-opacity-90 backdrop-blur">
       {layout.map((item) => {
         const isFound = found.has(item.value);
                 
@@ -22,8 +22,8 @@ export function Board({ layout, found, currentTarget, onTap }: Props) {
             disabled={isFound}
             onClick={() => onTap(item.value)}
             className={cn(
-              "absolute flex items-center justify-center rounded-xl font-bold touch-manipulation tap-highlight-transparent leading-none",
-              isFound ? "text-slate-300 pointer-events-none" : cn(item.colorClass, "active:scale-95 transition-transform"),
+              "absolute flex items-center justify-center rounded-xl font-black font-fredoka touch-manipulation tap-highlight-transparent leading-none drop-shadow-md",
+              isFound ? "text-slate-300 pointer-events-none opacity-50" : "active:scale-95 transition-transform",
               
             )}
             style={{
@@ -32,6 +32,7 @@ export function Board({ layout, found, currentTarget, onTap }: Props) {
               width: `${item.width}px`,
               height: `${item.height}px`,
               fontSize: `${item.fontSize}px`,
+              color: isFound ? undefined : item.colorClass,
             }}
             aria-label={item.value.toString()}
             aria-disabled={isFound}

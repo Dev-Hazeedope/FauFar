@@ -36,7 +36,7 @@ export function TimerDisplay({
   const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
   
   return (
-    <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-lg shadow-sm border ${timeLeft <= 10 ? 'bg-red-100 text-red-700 border-red-200 animate-pulse' : 'bg-white text-slate-700 border-slate-200'}`}>
+    <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-xl border-4 border-slate-900 shadow-[4px_4px_0_0_#0f172a] ${timeLeft <= 10 ? 'bg-[#FF5757] text-white animate-pulse' : 'bg-white text-slate-900'}`}>
       <Timer className="w-5 h-5" />
       <span className="tabular-nums w-14 text-center">{timeStr}</span>
     </div>

@@ -10,9 +10,6 @@ import { MemoryPairs } from './MemoryPairs';
 import { WhatsMissing } from './WhatsMissing';
 import { SecretNumber } from './SecretNumber';
 import { CrackTheCode } from './CrackTheCode';
-import { DotsAndBoxes } from './DotsAndBoxes';
-import { FourInARow } from './FourInARow';
-import { TakeTheLastToken } from './TakeTheLastToken';
 
 export interface GameDefinition {
   id: string;
@@ -64,26 +61,5 @@ export const games: GameDefinition[] = [
     description: 'Deduce the secret 4-digit code using logic clues.',
     icon: Lock,
     component: CrackTheCode,
-  },
-  {
-    id: 'dots-and-boxes',
-    title: 'Dots & Boxes',
-    description: 'Connect dots to claim boxes in this classic 2-player game.',
-    icon: Shapes,
-    component: DotsAndBoxes,
-  },
-  {
-    id: 'four-in-a-row',
-    title: 'Four in a Row',
-    description: 'Drop pieces to connect four in a row before your opponent.',
-    icon: MousePointerClick,
-    component: FourInARow,
-  },
-  {
-    id: 'take-the-last-token',
-    title: 'Take the Last Token',
-    description: 'A strategic token removal game. Outsmart your friend.',
-    icon: Coins,
-    component: TakeTheLastToken,
   },
 ];

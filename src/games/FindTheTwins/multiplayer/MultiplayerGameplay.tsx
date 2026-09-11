@@ -35,6 +35,11 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
         onLeave();
         return;
       }
+      if (updatedRoom.hostLeft) {
+        alert("The host has left the game.");
+        onLeave();
+        return;
+      }
       setRoom(updatedRoom);
       
       const prevRoom = prevRoomRef.current;
@@ -130,15 +135,15 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
 
   if (!isPlaying) {
     return (
-      <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset">
+      <div className="game-screen">
         <header className="flex items-center justify-between mb-8">
-          <button onClick={handleLeave} className="p-3 text-red-500 hover:text-red-600 bg-red-50 rounded-full">
+          <button onClick={handleLeave} className="game-avatar text-[#FF5757] hover:bg-[#FF5757] hover:text-white">
             <LogOut className="w-6 h-6" />
           </button>
           <div className="text-center relative">
             <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Room Code</p>
             <div className="flex items-center justify-center gap-3">
-              <h1 className="text-4xl font-black text-slate-900 tracking-widest">{room.id}</h1>
+              <h1 className="game-title text-center mb-6 !text-slate-900 !stroke-none !shadow-none tracking-widest">{room.id}</h1>
               <button onClick={handleCopyCode} className="p-2 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors" title="Copy room code">
                 {copied ? <Check className="w-6 h-6 text-emerald-500" /> : <Copy className="w-6 h-6" />}
               </button>
@@ -148,7 +153,7 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
         </header>
 
         <div className="flex-1 max-w-md mx-auto w-full flex flex-col gap-6">
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex-1">
+          <div className="game-panel flex-1">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <Users className="w-5 h-5 text-indigo-500" /> Players
@@ -180,7 +185,7 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
               <button 
                 onClick={handleStartGame}
                 disabled={Object.keys(room.players).length < 2}
-                className="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+                className="w-full py-4 text-xl game-button-primary disabled:opacity-50"
               >
                 <Play className="w-6 h-6" /> Start Game
               </button>
@@ -201,7 +206,7 @@ export function MultiplayerGameplay({ room: initialRoom, onLeave, onGameEnded }:
   const isHard = room.config.difficulty === 'hard';
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] text-slate-800 safe-area-inset">
+    <div className="game-screen">
       <header className="flex flex-col p-4 bg-white/80 backdrop-blur border-b border-slate-200 shrink-0 gap-4">
         <div className="flex items-center justify-between">
           <button onClick={handleLeave} className="p-2 text-slate-400 hover:text-red-500 bg-slate-100 rounded-full"><LogOut className="w-5 h-5" /></button>

@@ -18,6 +18,7 @@ export interface FTTRoom {
     difficulty: 'easy' | 'medium' | 'hard';
   };
   state: 'waiting' | 'playing' | 'completed';
+  hostLeft?: boolean;
   
   // Game State
   items: { id: string, iconIdx: number, isPair: boolean }[];

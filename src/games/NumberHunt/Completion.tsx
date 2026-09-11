@@ -19,11 +19,11 @@ export function Completion({ won, onPlayAgain, onChangeRange }: Props) {
   }, [won]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100dvh] p-4 bg-[#fdfbf7] text-slate-800">
+    <div className="game-screen items-center justify-center relative">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center"
+        className="w-full max-w-md game-panel text-center"
       >
         <motion.div 
           initial={{ rotate: won ? -15 : 0 }}
@@ -38,7 +38,7 @@ export function Completion({ won, onPlayAgain, onChangeRange }: Props) {
           )}
         </motion.div>
         
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+        <h1 className="game-title-sm !text-slate-900 !stroke-none !shadow-none mb-2">
           {won ? 'All numbers found!' : "Time's up!"}
         </h1>
         <p className="text-slate-600 mb-8 text-lg">
@@ -48,13 +48,13 @@ export function Completion({ won, onPlayAgain, onChangeRange }: Props) {
         <div className="flex flex-col gap-3">
           <button 
             onClick={onPlayAgain}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl text-lg transition-colors shadow-sm"
+            className="w-full py-4 game-button-primary"
           >
             Play Again
           </button>
           <button 
             onClick={onChangeRange}
-            className="w-full py-4 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-bold rounded-xl text-lg transition-colors"
+            className="w-full py-4 game-button-secondary"
           >
             Change Range
           </button>

@@ -1,7 +1,8 @@
 import { TimerSetup } from '../../components/TimerSetup';
 import { TimerDisplay } from '../../components/TimerDisplay';
 import React, { useState } from 'react';
-import { Home, RefreshCw, Users, User, Link } from 'lucide-react';
+import { Illustration } from '../../components/Illustration';
+import { Home, RefreshCw, Users, User, Link, Info } from 'lucide-react';
 import { SHARED_ICONS } from '../../lib/icons';
 import { shuffle } from '../../lib/utils';
 import { audio } from '../../lib/audio';
@@ -9,6 +10,7 @@ import { haptics } from '../../lib/haptics';
 import { MultiplayerSetup } from './multiplayer/MultiplayerSetup';
 import { MultiplayerGameplay } from './multiplayer/MultiplayerGameplay';
 import { MultiplayerCompletion } from './multiplayer/MultiplayerCompletion';
+import { HowToPlayModal } from '../../components/HowToPlayModal';
 
 type Mode = 'solo' | 'two';
 type Difficulty = 6 | 8 | 12;
@@ -21,6 +23,7 @@ interface Card {
 export function MemoryPairs({ onExit }: { onExit: () => void }) {
   const [selectMode, setSelectMode] = useState<'SELECT' | 'LOCAL' | 'MULTI'>('SELECT');
   const [state, setState] = useState<'setup' | 'playing' | 'completed'>('setup');
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
   
   // Multiplayer state
   const [room, setRoom] = useState<any>(null);
@@ -116,38 +119,52 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
 
   if (selectMode === 'SELECT') {
     return (
-      <div className="min-h-[100dvh] bg-[#fdfbf7] p-6 safe-area-inset flex flex-col">
-        <header className="flex items-center gap-4 mb-8">
-          <button onClick={onExit} className="p-3 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
-            <Home className="w-6 h-6" />
+      <div className="game-screen relative">
+        <HowToPlayModal 
+          isOpen={showHowToPlay}
+          onClose={() => setShowHowToPlay(false)}
+          title="Memory Pairs"
+          instructions={[
+            "Tap cards to flip them over and reveal their icons.",
+            "Try to find matching pairs of icons.",
+            "In local multiplayer, take turns flipping cards.",
+            "In online multiplayer, race to find pairs as quickly as you can before time runs out!"
+          ]}
+        />
+        <header className="flex items-center gap-4 mb-8 justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={onExit} className="game-avatar bg-white hover:bg-slate-200 cursor-pointer">
+              <Home className="w-6 h-6" />
+            </button>
+            <h1 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none">Memory Pairs</h1>
+          </div>
+          <button onClick={() => setShowHowToPlay(true)} className="game-avatar text-white !bg-[#5CE1E6] hover:!bg-[#4bd8dd] cursor-pointer">
+            <Info className="w-6 h-6" />
           </button>
-          <h1 className="text-3xl font-black text-slate-900">Memory Pairs</h1>
         </header>
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full gap-4">
           <button
             onClick={() => setSelectMode('LOCAL')}
-            className="w-full p-8 bg-indigo-600 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-indigo-600/20"
+            className="game-card bg-[#5CE1E6] p-8 flex flex-col items-center gap-4 w-full cursor-pointer"
           >
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-              <User className="w-8 h-8" />
-            </div>
+            <Illustration emoji="🎮" shape="square" color="#ffffff" className="scale-75" />
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-1">Local Play</h2>
-              <p className="text-indigo-100">Play solo or pass & play</p>
+              <p className="text-slate-800">Play solo or pass & play</p>
             </div>
           </button>
 
           <button
             onClick={() => setSelectMode('MULTI')}
-            className="w-full p-8 bg-emerald-500 text-white rounded-3xl flex flex-col items-center gap-4 active:scale-95 transition-transform shadow-xl shadow-emerald-500/20"
+            className="game-card bg-[#C1FF72] p-8 flex flex-col items-center gap-4 w-full cursor-pointer"
           >
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-white shadow-[2px_2px_0_0_#0f172a] border-4 border-slate-900 rounded-2xl flex items-center justify-center">
               <Link className="w-8 h-8" />
             </div>
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-1">Online Multiplayer</h2>
-              <p className="text-emerald-100">Play with a friend remotely</p>
+              <p className="text-slate-800">Play with a friend remotely</p>
             </div>
           </button>
         </div>
@@ -186,11 +203,11 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
 
   if (state === 'setup') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-[#fdfbf7] p-6 text-slate-800">
-        <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+      <div className="game-screen items-center justify-center relative">
+        <div className="w-full max-w-md game-panel">
           <div className="flex items-center mb-6">
              <button onClick={() => setSelectMode('SELECT')} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><Home className="w-6 h-6" /></button>
-             <h1 className="text-2xl font-black ml-2 text-slate-900">Local Play</h1>
+             <h1 className="game-title-sm ml-2 !text-slate-900 !stroke-none !shadow-none">Local Play</h1>
           </div>
           <p className="mb-6 text-slate-600">Find matching pairs. Leave non-matches visible until you're ready.</p>
           <TimerSetup timedMode={timedMode} setTimedMode={setTimedMode} timeLimit={timeLimit} setTimeLimit={setTimeLimit} />
@@ -223,7 +240,7 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
   };
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#fdfbf7] text-slate-800 safe-area-inset">
+    <div className="game-screen">
       <header className="flex flex-col p-4 bg-white/80 backdrop-blur border-b border-slate-200 sticky top-0 z-10 gap-4">
         <TimerDisplay timedMode={timedMode} timeLeft={timeLeft} setTimeLeft={setTimeLeft} isActive={state === 'playing'} onTimeUp={() => { setIsTimeUp(true); setState('completed'); }} />
         <div className="flex items-center justify-between">
@@ -271,7 +288,7 @@ export function MemoryPairs({ onExit }: { onExit: () => void }) {
           )}
           {state === 'completed' && (
             <div className="text-center animate-in fade-in slide-in-from-bottom-2">
-              <h2 className="text-2xl font-black text-slate-900 mb-2">{mode === 'two' ? getWinner() : 'All pairs found!'}</h2>
+              <h2 className="game-title-sm text-center mb-4 !text-slate-900 !stroke-none !shadow-none mb-2">{mode === 'two' ? getWinner() : 'All pairs found!'}</h2>
               <button onClick={() => startRound(mode, diff, false)} className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-md">
                 Play Again
               </button>

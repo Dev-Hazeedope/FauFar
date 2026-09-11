@@ -22,6 +22,7 @@ export interface CTCRoom {
     timeLimit: number;
   };
   state: 'waiting' | 'playing' | 'completed';
+  hostLeft?: boolean;
   
   // Game State
   secret: number[];
@@ -101,7 +102,7 @@ export const startGame = async (roomId: string) => {
     transaction.update(roomRef, {
       state: 'playing',
       endTime: room.config.timeLimit > 0 ? Date.now() + room.config.timeLimit * 1000 : null,
-      secret: shuffle([1, 2, 3, 4, 5, 6, 7, 8]).slice(0, 5),
+      secret: shuffle([1, 2, 3, 4, 5, 6, 7, 8]).slice(0, 4),
       guesses: { 1: 0, 2: 0 },
       winner: null,
       isDraw: false
